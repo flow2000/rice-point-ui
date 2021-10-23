@@ -159,7 +159,7 @@
                 <input
                   v-model="searchKey"
                   type="search"
-                  id="search">
+                  id="search" placeholder="地图选址不明确可尝试手动搜索">
                 <button @click="searchByHand">搜索</button>
                 <input id="searchTude" v-show="false"></input>
                 <div class="tip-box" id="searchTip"></div>
@@ -327,7 +327,7 @@
         address: null,
         searchKey: '',
         amapManager,
-        poiPicker:null,
+        poiPicker: null,
         markers: [],
         searchOption: {
           city: '全国',
@@ -343,7 +343,7 @@
           //点击地图自动赋值搜索框
           click(e) {
             self.markers = []
-            let {lng, lat} = e.lnglat
+            let { lng, lat } = e.lnglat
             self.lng = lng
             self.lat = lat
             self.center = [lng, lat]
@@ -354,13 +354,15 @@
               extensions: 'all'
             })
 
-            geocoder.getAddress([lng, lat], function (status, result) {
-              if (status === 'complete' && result.info === 'OK') {
-                console.log(result.regeocode)
-                self.address = result.regeocode.formattedAddress
-                self.searchKey = result.regeocode.formattedAddress
-                document.getElementById('search').value=self.searchKey
-                document.getElementById('searchTude').value=self.lng+","+self.lat
+            geocoder.getAddress([lng, lat], function(status, result) {
+              if (status === 'complete' && result.info === 'OK' && result && result.regeocode) {
+                var province = result.regeocode.addressComponent.province //去除省份
+                var township = result.regeocode.addressComponent.township //去除街道
+                var str = result.regeocode.formattedAddress
+                self.searchKey = str.replace(new RegExp(province, 'g'), '')
+                  .replace(new RegExp(township, 'g'), '')
+                document.getElementById('search').value = self.searchKey
+                document.getElementById('searchTude').value = self.lng + ',' + self.lat
               }
             })
           }
