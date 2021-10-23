@@ -74,14 +74,17 @@
 
     <el-table v-loading="loading" :data="infoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="食堂id" align="center" prop="canteenId" />
       <el-table-column label="食堂名称" align="center" prop="canteenName" />
       <el-table-column label="食堂图片" align="center" prop="canteenUrl" >
         <template slot-scope="scope">
           <el-image :src="getImage(scope.row.canteenUrl)" style="width: 100px; height: 100px"></el-image>
         </template>
       </el-table-column>
-      <el-table-column label="人均消费" align="center" prop="average" />
+      <el-table-column label="人均消费" align="center" prop="average" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.average!==null">{{scope.row.average}}￥</span>
+        </template>
+      </el-table-column>
       <el-table-column label="负责人" align="center" prop="leader" />
       <el-table-column label="联系电话" align="center" prop="phone" />
       <el-table-column label="邮箱" align="center" prop="email" />
@@ -326,7 +329,8 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const canteenIds = row.canteenId || this.ids;
-      this.$modal.confirm('是否确认删除食堂信息编号为"' + canteenIds + '"的数据项？').then(function() {
+      const canteenName = row.canteenName || '该食堂';
+      this.$modal.confirm('是否确认删除' + canteenName + '？').then(function() {
         return delInfo(canteenIds);
       }).then(() => {
         this.getList();
@@ -347,16 +351,16 @@ export default {
     /** 状态修改按钮操作 */
     handleStatusChange(row) {
       let text = row.status === "0" ? "启用" : "停用";
-      this.$confirm('确认要"' + text + '吗?', "警告", {
+      this.$modal.confirm('确认要' + text + '吗?', "警告", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       }).then(function() {
         return changeCanteenStatus(row.canteenId, row.status);
       }).then(() => {
-        this.msgSuccess(text + "成功");
+        this.$modal.msgSuccess(text + "成功");
       }).catch(function() {
-        row.status = row.status === "0" ? "1" : "0";
+        row.status = row.status === "0" ? "0" : "1";
       });
     },
   }

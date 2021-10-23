@@ -53,7 +53,7 @@ export function exportInfo(query) {
 }
 
 // 食堂信息状态修改
-export function changeCanteenStatus(locationId, status) {
+export function changeCanteenStatus(canteenId, status) {
   const data = {
     canteenId,
     status
