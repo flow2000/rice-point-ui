@@ -114,6 +114,17 @@
         <el-form-item label="菜品类型" prop="typeName">
           <el-input v-model="form.typeName" placeholder="请输入菜品类型" />
         </el-form-item>
+        <el-form-item label="食堂">
+          <el-select v-model="form.canteenIds" multiple placeholder="请选择">
+            <el-option
+              v-for="item in canteenOptions"
+              :key="item.canteenId"
+              :label="item.canteenName"
+              :value="item.canteenId"
+              :disabled="item.status === '1'"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="数据状态">
           <el-radio-group v-model="form.status">
             <el-radio
@@ -134,6 +145,7 @@
 
 <script>
 import { listType, getType, delType, addType, updateType, exportType, changeTypeStatus } from "@/api/dish/type";
+import { listInfo } from '@/api/canteen/info'
 
 export default {
   name: "Type",
@@ -156,6 +168,8 @@ export default {
       total: 0,
       // 菜品类型表格数据
       typeList: [],
+      // 食堂选项
+      canteenOptions: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -201,7 +215,8 @@ export default {
         createBy: null,
         createTime: null,
         updateBy: null,
-        updateTime: null
+        updateTime: null,
+        canteenIds: null,
       };
       this.resetForm("form");
     },
@@ -224,6 +239,9 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
+      listInfo().then(response => {
+        this.canteenOptions = response.rows
+      })
       this.open = true;
       this.title = "添加菜品类型";
     },
@@ -231,6 +249,9 @@ export default {
     handleUpdate(row) {
       this.reset();
       const typeId = row.typeId || this.ids
+      listInfo().then(response => {
+        this.canteenOptions = response.rows
+      })
       getType(typeId).then(response => {
         this.form = response.data;
         this.open = true;
