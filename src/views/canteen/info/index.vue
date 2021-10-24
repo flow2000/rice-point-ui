@@ -78,21 +78,21 @@
 
     <el-table v-loading="loading" :data="infoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
-      <el-table-column label="食堂名称" align="center" prop="canteenName"/>
+      <el-table-column label="食堂名称" align="center" prop="canteenName" :show-overflow-tooltip="true"/>
       <el-table-column label="食堂图片" align="center" prop="canteenUrl">
         <template slot-scope="scope">
-          <el-image :src="getImage(scope.row.canteenUrl)" style="width: 100px; height: 100px"></el-image>
+          <el-image :src="getImage(scope.row.canteenUrl)"></el-image>
         </template>
       </el-table-column>
-      <el-table-column label="详细地址" align="center" prop="location"/>
-      <el-table-column label="人均消费" align="center" prop="average">
+      <el-table-column label="详细地址" align="center" prop="location" :show-overflow-tooltip="true"/>
+      <el-table-column label="人均消费(元)" align="center" prop="average">
         <template slot-scope="scope">
-          <span v-if="scope.row.average!==null">{{scope.row.average}}￥</span>
+          <span v-if="scope.row.average!==null">￥{{scope.row.average}}</span>
         </template>
       </el-table-column>
       <el-table-column label="负责人" align="center" prop="leader"/>
       <el-table-column label="联系电话" align="center" prop="phone"/>
-      <el-table-column label="邮箱" align="center" prop="email"/>
+      <el-table-column label="邮箱" align="center" prop="email" :show-overflow-tooltip="true"/>
       <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
           <el-switch
@@ -183,7 +183,7 @@
 
         </el-form-item>
         <el-form-item label="人均消费" prop="average">
-          <el-input v-model="form.average" placeholder="请输入人均消费"/>
+          <el-input v-model="form.average" placeholder="请输入人均消费(元)"/>
         </el-form-item>
         <el-form-item label="负责人" prop="leader">
           <el-input v-model="form.leader" placeholder="请输入负责人"/>
@@ -301,13 +301,17 @@
         // 表单校验
         rules: {
           canteenName: [
-            { required: true, message: '食堂名称不能为空', trigger: 'blur' }
+            { required: true, message: '食堂名称不能为空', trigger: 'blur' },
+            { min: 2, max: 20, message: '食堂名称长度必须介于 2 和 20 之间', trigger: 'blur' }
           ],
           canteenUrl: [
             { required: true, message: '食堂图片不能为空', trigger: 'blur' }
           ],
           location: [
             { required: true, message: '详细地址不能为空', trigger: 'blur' }
+          ],
+          average: [
+            { pattern: /^(0\.\d{0,1}[1-9]|\+?[1-9][0-9]{0,3})(\.\d{1,2})?$/, message: '请输入0-100之间且小于2位小数的金额', trigger: 'blur' }
           ],
           leader: [
             { required: true, message: '负责人不能为空', trigger: 'blur' }
