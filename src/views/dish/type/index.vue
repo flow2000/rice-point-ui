@@ -66,9 +66,19 @@
     <el-table v-loading="loading" :data="typeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="菜品类型" align="center" prop="typeName" />
+      <el-table-column label="所属食堂" align="center" prop="canteenIds" >
+        <template slot-scope="scope">
+          <el-tag size="small"
+            v-for="item in canteenOptions"
+            v-if="scope.row.canteenIds.indexOf(item.canteenId)!==-1"
+            :key="item.canteenId"
+            >
+            {{item.canteenName}}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" />
       <el-table-column label="修改时间" align="center" prop="updateTime" />
-
       <el-table-column label="状态" align="center" prop="status" >
         <template slot-scope="scope">
           <el-switch
@@ -196,6 +206,9 @@ export default {
   methods: {
     /** 查询菜品类型列表 */
     getList() {
+      listInfo().then(response => {
+        this.canteenOptions = response.rows
+      })
       this.loading = true;
       listType(this.queryParams).then(response => {
         this.typeList = response.rows;
