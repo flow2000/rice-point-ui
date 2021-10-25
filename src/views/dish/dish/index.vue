@@ -12,7 +12,11 @@
       </el-form-item>
       <el-form-item label="菜品类型" prop="dishesType">
         <el-select v-model="queryParams.dishesType" placeholder="请选择菜品类型" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+          <el-option
+            v-for="type in dishesType"
+            :key="parseInt(type.typeId)"
+            :value="type.typeName">
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="菜品价格" prop="price">
@@ -79,15 +83,28 @@
 
     <el-table v-loading="loading" :data="dishList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="菜品id" align="center" prop="dishId" />
-      <el-table-column label="菜品名称" align="center" prop="dishesName" />
+      <el-table-column label="菜品名称" align="center" prop="dishesName" :show-overflow-tooltip="true" />
       <el-table-column label="菜品类型" align="center" prop="dishesType" />
-      <el-table-column label="菜品图片" align="center" prop="url" />
-      <el-table-column label="菜品价格" align="center" prop="price" />
+      <el-table-column label="菜品图片" align="center" prop="url" >
+        <template slot-scope="scope">
+          <el-image :src="getImage(scope.row.url)" ></el-image>
+        </template>
+      </el-table-column>
+      <el-table-column label="菜品价格" align="center" prop="price" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.price!==null">￥{{scope.row.price}}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="月售量" align="center" prop="onsale" />
       <el-table-column label="菜品状态" align="center" prop="status">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.sys_status" :value="scope.row.status"/>
+          <el-switch
+            v-if="scope.row.status"
+            v-model="scope.row.status"
+            active-value="0"
+            inactive-value="1"
+            @change="handleStatusChange(scope.row)"
+          ></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -109,7 +126,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -126,11 +143,16 @@
         </el-form-item>
         <el-form-item label="菜品类型" prop="dishesType">
           <el-select v-model="form.dishesType" placeholder="请选择菜品类型">
-            <el-option label="请选择字典生成" value="" />
+            <el-option
+              v-for="type in dishesType"
+              :key="parseInt(type.typeId)"
+              :label="type.typeName"
+              :value="type.typeName">
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="菜品图片" prop="url">
-          <el-input v-model="form.url" placeholder="请输入菜品图片" />
+          <imageUpload v-model="form.url" :limit="1"/>
         </el-form-item>
         <el-form-item label="菜品价格" prop="price">
           <el-input v-model="form.price" placeholder="请输入菜品价格" />
@@ -144,9 +166,6 @@
             >{{dict.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="删除标志" prop="delFlag">
-          <el-input v-model="form.delFlag" placeholder="请输入删除标志" />
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -157,7 +176,8 @@
 </template>
 
 <script>
-import { listDish, getDish, delDish, addDish, updateDish, exportDish } from "@/api/dish/dish";
+import { listDish, getDish, delDish, addDish, updateDish, exportDish, changeDishStatus } from "@/api/dish/dish";
+import { listType } from "@/api/dish/type";
 
 export default {
   name: "Dish",
@@ -178,8 +198,14 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
+      // 状态字典
+      statusOptions: [],
       // 菜品表格数据
       dishList: [],
+      // 菜品类型数据
+      dishesType: [],
+      // 菜品类型数量
+      typeTotal: 0,
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -196,11 +222,16 @@ export default {
       form: {},
       // 表单校验
       rules: {
+
       }
     };
   },
   created() {
     this.getList();
+    this.getDicts('sys_status').then(response => {
+      this.statusOptions = response.data
+    })
+    this.getType();
   },
   methods: {
     /** 查询菜品列表 */
@@ -211,6 +242,18 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
+    },
+    /** 查询菜品类型 */
+    getType(){
+      listType(this.queryParams).then(response => {
+        this.dishesType = response.rows;
+        this.typeTotal = response.total;
+      });
+    },
+    /** 返回图片地址 */
+    getImage(url) {
+      var location = window.location
+      return location.origin + ':8080' + url
     },
     // 取消按钮
     cancel() {
@@ -307,7 +350,22 @@ export default {
         this.$download.name(response.msg);
         this.exportLoading = false;
       }).catch(() => {});
-    }
+    },
+    /** 状态修改按钮操作 */
+    handleStatusChange(row) {
+      let text = row.status === '0' ? '启用' : '停用'
+      this.$modal.confirm('确认要' + text + '吗?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return changeDishStatus(row.dishId, row.status)
+      }).then(() => {
+        this.$modal.msgSuccess(text + '成功')
+      }).catch(function() {
+        row.status = row.status === '0' ? '1' : '0'
+      })
+    },
   }
 };
 </script>

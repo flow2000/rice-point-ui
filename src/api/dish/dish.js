@@ -51,3 +51,16 @@ export function exportDish(query) {
     params: query
   })
 }
+
+// 菜品状态修改
+export function changeDishStatus(dishId, status) {
+  const data = {
+    dishId,
+    status
+  }
+  return request({
+    url: '/dish/dish/changeStatus',
+    method: 'put',
+    data: data
+  })
+}
