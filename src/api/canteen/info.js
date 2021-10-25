@@ -64,3 +64,11 @@ export function changeCanteenStatus(canteenId, status) {
     data: data
   })
 }
+
+// 获取食堂下拉树列表
+export function treeselect() {
+  return request({
+    url: '/canteen/info/treeselect',
+    method: 'get'
+  })
+}
