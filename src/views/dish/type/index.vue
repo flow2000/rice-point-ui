@@ -184,6 +184,9 @@ export default {
       form: {},
       // 表单校验
       rules: {
+        typeName: [
+          { required: true, message: "菜品类型不能为空", trigger: "blur" },
+        ],
       }
     };
   },
