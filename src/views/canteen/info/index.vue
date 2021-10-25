@@ -566,7 +566,7 @@
         }).then(() => {
           this.$modal.msgSuccess(text + '成功')
         }).catch(function() {
-          row.status = row.status === '0' ? '0' : '1'
+          row.status = row.status === '0' ? '1' : '0'
         })
       },
       /** 打开选择地址对话框 */
