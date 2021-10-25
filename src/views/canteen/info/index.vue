@@ -469,7 +469,7 @@
           leader: null,
           phone: null,
           email: null,
-          status: null,
+          status: "0",
           createBy: null,
           createTime: null,
           updateBy: null,
