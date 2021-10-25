@@ -13,7 +13,12 @@
             style="margin-bottom: 20px"
           />
         </div>
-        <div class="head-container">
+        <div class="head-container" style="position: center">
+          <div class="btn">
+            <el-button style="color: #607188" size="mini" type="text" @click="selectCanteen" >
+              全部食堂
+            </el-button>
+          </div>
           <el-tree
             :data="canteenOptions"
             :props="defaultProps"
@@ -451,6 +456,11 @@ export default {
     // 节点单击事件
     handleNodeClick(data) {
       this.queryParams.canteenId = data.id;
+      this.getList();
+    },
+    // 单击全部食堂事件
+    selectCanteen(){
+      this.queryParams.canteenId = null;
       this.getList();
     },
   }
