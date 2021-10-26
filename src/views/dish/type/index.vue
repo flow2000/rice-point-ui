@@ -297,7 +297,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const typeIds = row.typeId || this.ids;
-      this.$modal.confirm('是否确认删除菜品类型编号为"' + typeIds + '"的数据项？').then(function() {
+      this.$modal.confirm('是否确认删除菜品类型为"' + row.typeName + '"的数据项？').then(function() {
         return delType(typeIds);
       }).then(() => {
         this.getList();
