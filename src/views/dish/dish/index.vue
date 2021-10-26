@@ -176,18 +176,18 @@
         <el-form-item label="菜品名称" prop="dishesName">
           <el-input v-model="form.dishesName" placeholder="请输入菜品名称" />
         </el-form-item>
-        <el-form-item label="菜品类型" prop="dishesType">
-          <el-select v-model="form.dishesType" placeholder="请选择菜品类型">
+        <el-form-item label="菜品类型" prop="typeId">
+          <el-select v-model="form.typeId" placeholder="请选择菜品类型">
             <el-option
               v-for="type in dishesType"
               :key="parseInt(type.typeId)"
               :label="type.typeName"
-              :value="type.typeName"
+              :value="parseInt(type.typeId)"
               :disabled="type.status === '1'">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="归属食堂" prop="canteenId">
+        <el-form-item label="归属食堂" prop="canteenIds">
           <el-select v-model="form.canteenIds" multiple placeholder="请选择">
             <el-option
               v-for="item in canteenOptions"
@@ -286,7 +286,16 @@ export default {
       },
       // 表单校验
       rules: {
-
+        dishesName:[
+          { required: true, message: '菜品名称不能为空', trigger: 'blur' },
+          { min: 2, max: 20, message: '菜品名称长度必须介于 2 和 20 之间', trigger: 'blur' }
+        ],
+        typeId: [
+          { required: true, message: '食堂类型不能为空', trigger: 'blur' }
+        ],
+        canteenIds: [
+          { required: true, message: '所属食堂不能为空', trigger: 'blur' }
+        ],
       }
     };
   },
@@ -415,7 +424,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const dishIds = row.dishId || this.ids;
-      this.$modal.confirm('是否确认删除菜品编号为"' + dishIds + '"的数据项？').then(function() {
+      this.$modal.confirm('是否确认删除菜品名称为"' + row.dishesName + '"的数据项？').then(function() {
         return delDish(dishIds);
       }).then(() => {
         this.getList();
