@@ -10,6 +10,16 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="所属食堂" prop="canteenId">
+        <el-select v-model="queryParams.canteenId" placeholder="请选择所属食堂" clearable size="small">
+          <el-option
+            v-for="c in canteenOptions"
+            :key="parseInt(c.canteenId)"
+            :value="c.canteenName"
+            :disabled="c.status === '1'">
+          </el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -189,6 +199,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         typeName: null,
+        canteenId: null,
       },
       // 表单参数
       form: {},
@@ -211,6 +222,8 @@ export default {
       })
       this.loading = true;
       listType(this.queryParams).then(response => {
+        console.log(this.queryParams)
+        console.log(this.canteenOptions)
         this.typeList = response.rows;
         this.total = response.total;
         this.loading = false;
