@@ -451,6 +451,10 @@
       /** 返回图片地址 */
       getImage(url) {
         var location = window.location
+        var agreement = location.protocol.toString()
+        if ((agreement.charAt(4)==="s")){
+          return location.origin + url
+        }
         return location.origin + ':8080' + url
       },
       // 取消按钮
