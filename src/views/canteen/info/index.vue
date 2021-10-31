@@ -450,12 +450,7 @@
       },
       /** 返回图片地址 */
       getImage(url) {
-        var location = window.location
-        var agreement = location.protocol.toString()
-        if ((agreement.charAt(4)==="s")){
-          return location.origin + '/prod-api' + url
-        }
-        return location.origin + ':8080' + url
+        return "https://ricepoint-1305004688.cos.ap-nanjing.myqcloud.com"+url;
       },
       // 取消按钮
       cancel() {

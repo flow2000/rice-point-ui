@@ -18,7 +18,7 @@
     >
       <i class="el-icon-plus"></i>
     </el-upload>
-    
+
     <!-- 上传提示 -->
     <div class="el-upload__tip" slot="tip" v-if="showTip">
       请上传
@@ -178,7 +178,9 @@ export default {
     },
     // 预览
     handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url;
+      var fileName = file.url;
+      fileName = fileName.substring(fileName.indexOf("/profile"),fileName.length);
+      this.dialogImageUrl = "https://ricepoint-1305004688.cos.ap-nanjing.myqcloud.com" + fileName;
       this.dialogVisible = true;
     },
     // 对象转成指定字符串分隔
