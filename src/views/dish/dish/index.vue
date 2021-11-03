@@ -15,7 +15,7 @@
         </div>
         <div class="head-container" style="position: center">
           <div class="btn">
-            <el-button style="color: #607188" size="mini" type="text" @click="selectCanteen" >
+            <el-button style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
               全部食堂
             </el-button>
           </div>
@@ -458,6 +458,8 @@ export default {
     },
     // 筛选节点
     filterNode(value, data) {
+      console.log(value)
+      console.log(data)
       if (!value) return true;
       return data.label.indexOf(value) !== -1;
     },
