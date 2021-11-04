@@ -73,7 +73,7 @@ export default {
       dialogImageUrl: "",
       dialogVisible: false,
       hideUpload: false,
-      baseUrl: process.env.VUE_APP_BASE_API,
+      baseUrl: "https://ricepoint-1305004688.cos.ap-nanjing.myqcloud.com",
       uploadImgUrl: process.env.VUE_APP_BASE_API + "/common/upload", // 上传的图片服务器地址
       headers: {
         Authorization: "Bearer " + getToken(),
@@ -178,9 +178,7 @@ export default {
     },
     // 预览
     handlePictureCardPreview(file) {
-      var fileName = file.url;
-      fileName = fileName.substring(fileName.indexOf("/profile"),fileName.length);
-      this.dialogImageUrl = "https://ricepoint-1305004688.cos.ap-nanjing.myqcloud.com" + fileName;
+      this.dialogImageUrl = file.url;
       this.dialogVisible = true;
     },
     // 对象转成指定字符串分隔
