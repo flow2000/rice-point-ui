@@ -89,13 +89,14 @@
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="取餐号码" prop="orderCode">
-          <el-input v-model="form.orderCode" placeholder="请输入取餐号码" />
+          <el-input v-model="form.mealNumber" disabled />
         </el-form-item>
+
         <el-form-item label="合计" prop="orderPrice">
-          <el-input v-model="form.orderPrice" placeholder="请输入合计" />
+          <el-input v-model="form.orderPrice" disabled />
         </el-form-item>
         <el-form-item label="订单状态">
-          <el-radio-group v-model="form.status" @change="change">
+          <el-radio-group v-model="form.status">
             <el-radio-button
               v-for="dict in dict.type.order_status"
               v-if="dict.value!=='0'&&dict.value!=='3'"
@@ -103,6 +104,14 @@
               :label="dict.value"
             >{{dict.label}}</el-radio-button>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item label="失败理由" prop="errorReason" v-show="form.status==='2'">
+          <el-autocomplete
+            v-model="form.errorReason"
+            placeholder="请输入失败理由"
+            :trigger-on-focus="true"
+            :fetch-suggestions="querySearchAsync"
+          ></el-autocomplete>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -137,6 +146,8 @@ export default {
       total: 0,
       // 订单表格数据
       orderList: [],
+      // 订单失败提示原因数组
+      orderError: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -159,6 +170,9 @@ export default {
   },
   created() {
     this.getList();
+    this.getDicts('order_error').then(response => {
+      this.orderError = response.data
+    })
   },
   methods: {
     /** 查询订单列表 */
@@ -184,7 +198,8 @@ export default {
         orderPrice: null,
         status: "0",
         delFlag: null,
-        createTime: null
+        createTime: null,
+        errorReason: null,
       };
       this.resetForm("form");
     },
@@ -221,13 +236,7 @@ export default {
         if (valid) {
           if (this.form.orderId != null) {
             updateOrder(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            addOrder(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess("操作成功");
               this.open = false;
               this.getList();
             });
@@ -246,12 +255,22 @@ export default {
         this.exportLoading = false;
       }).catch(() => {});
     },
-    change(status){
-      //监听到特定值时
-      if(status === '2' ){
-        console.log(status)
+    // 动态查询
+    querySearchAsync(queryString,cb){
+      let errorList = this.orderError;
+      //增加value属性
+      for (let i = 0; i < errorList.length; i++) {
+        errorList[i]["value"] = errorList[i].dictLabel
       }
-    }
+      var results = queryString ? errorList.filter(this.createStateFilter(queryString)) : errorList;
+      cb(results);
+    },
+    // 创建一个过滤器
+    createStateFilter (queryString) {
+      return (state) => {
+        return (state.dictLabel.indexOf(queryString) === 0);
+      };
+    },
   }
 };
 </script>
