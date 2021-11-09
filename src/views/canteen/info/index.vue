@@ -147,8 +147,8 @@
           <el-input v-model="form.tude" id="tude"/>
         </el-form-item>
         <el-form-item label="详细地址" prop="location">
-          <el-input v-model="form.location" placeholder="请获取详细地址" disabled/>
-          <el-button type="text" @click="openMap()">获取详细地址</el-button>
+          <el-input v-model="form.location" placeholder="请获取详细地址"/>
+          <el-button type="text" @click="openMap()"><span style="font-size: 13px">地图选点</span></el-button>
           <el-dialog
             title="地址选择"
             width="80%"
