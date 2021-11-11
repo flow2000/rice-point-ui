@@ -1,54 +1,28 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="第几期" prop="time">
-        <el-input
+      <el-form-item label="期数" prop="time">
+        <el-select
           v-model="queryParams.time"
-          placeholder="请输入第几期"
+          placeholder="请选择期数"
           clearable
+          prefix-icon="el-icon-search"
           size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+          style="width: 100%"
+          @clear="handClearPeriodsClick"
+        >
+          <el-option
+            v-for="item in totalTime"
+            :key="item"
+            :label="item"
+            :value="item"
+            @click.native="handlePeriodsClick(item)"
+          />
+        </el-select>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['ticket:info:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['ticket:info:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['ticket:info:remove']"
-        >删除</el-button>
-      </el-col>
       <el-col :span="1.5">
         <el-button
           type="warning"
@@ -60,66 +34,30 @@
           v-hasPermi="['ticket:info:export']"
         >导出</el-button>
       </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="RenderChart"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="infoList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="投票id" align="center" prop="ticketId" />
-      <el-table-column label="菜品id" align="center" prop="dishId" />
-      <el-table-column label="票数" align="center" prop="ticketNumber" />
-      <el-table-column label="第几期" align="center" prop="time" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['ticket:info:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['ticket:info:remove']"
-          >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+    <div>
+      <div id="main" class="main_container"></div>
+    </div>
 
-    <!-- 添加或修改投票信息对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="菜品id" prop="dishId">
-          <el-input v-model="form.dishId" placeholder="请输入菜品id" />
-        </el-form-item>
-        <el-form-item label="票数" prop="ticketNumber">
-          <el-input v-model="form.ticketNumber" placeholder="请输入票数" />
-        </el-form-item>
-        <el-form-item label="第几期" prop="time">
-          <el-input v-model="form.time" placeholder="请输入第几期" />
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+    <template>
+      <div id="app">
+        <div id="barChart" style="width: 100%;height:500px;"></div>
+      </div>
+    </template>
+    <!--  投票信息折线图  -->
+    <el-dialog @open="openLine" :title="chartTitle" :visible.sync="chartOpen" width="800px" append-to-body>
+      <div>
+        <div id="lineChart" style="width: 100%;height:500px;"></div>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { listInfo, getInfo, delInfo, addInfo, updateInfo, exportInfo } from "@/api/ticket/info";
+import { exportInfo, listInfo, getDishTicketInfo, getTotalTime } from "@/api/ticket/info";
+import theme from '@/assets/theme/echartsTheme'
 
 export default {
   name: "Info",
@@ -129,125 +67,139 @@ export default {
       loading: true,
       // 导出遮罩层
       exportLoading: false,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
       // 显示搜索条件
       showSearch: true,
       // 总条数
       total: 0,
       // 投票信息表格数据
       infoList: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
+      // 柱状图
+      barChart: null,
+      // 线性图
+      lineChart: null,
+      // 柱状图数据
+      barOption: null,
+      // 线性图数据
+      lineOption: null,
+      // 折线图弹出层标题
+      chartTitle: "",
+      // 是否显示折线弹出层
+      chartOpen :false,
       // 查询参数
       queryParams: {
-        pageNum: 1,
-        pageSize: 10,
         time: null,
+        dishesName: null,
       },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
-      }
+      //总共几期
+      totalTime: null,
     };
   },
   created() {
-    this.getList();
+    getTotalTime().then((response) => {
+      this.totalTime = response.data;
+    })
+  },
+  mounted() {
+    this.drawChart()
   },
   methods: {
-    /** 查询投票信息列表 */
-    getList() {
-      this.loading = true;
-      listInfo(this.queryParams).then(response => {
-        this.infoList = response.rows;
-        this.total = response.total;
-        this.loading = false;
-      });
-    },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      this.reset();
-    },
-    // 表单重置
-    reset() {
-      this.form = {
-        ticketId: null,
-        dishId: null,
-        ticketNumber: null,
-        time: null,
-        createTime: null
-      };
-      this.resetForm("form");
-    },
-    /** 搜索按钮操作 */
-    handleQuery() {
-      this.queryParams.pageNum = 1;
-      this.getList();
-    },
-    /** 重置按钮操作 */
-    resetQuery() {
-      this.resetForm("queryForm");
-      this.handleQuery();
-    },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.ticketId)
-      this.single = selection.length!==1
-      this.multiple = !selection.length
-    },
-    /** 新增按钮操作 */
-    handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加投票信息";
-    },
-    /** 修改按钮操作 */
-    handleUpdate(row) {
-      this.reset();
-      const ticketId = row.ticketId || this.ids
-      getInfo(ticketId).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改投票信息";
-      });
-    },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (this.form.ticketId != null) {
-            updateInfo(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            addInfo(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
+    // 设置柱状图数据
+    setBarOption(list){
+      var xdata = [];
+      var ydata = [];
+      for (let i = 0; i < list.length; i++) {
+        xdata.push(list[i].dishesName)
+        ydata.push(list[i].ticketNumber)
+      }
+      this.barOption = {
+        title: {
+          text: "第" + list[0].time + "期菜品投票信息",
+          left: 50,
+        },
+        tooltip: {},
+        legend: {
+          data: ["票数"]
+        },
+        xAxis: {
+          data: xdata
+        },
+        yAxis: {},
+        series: [
+          {
+            name: "票数",
+            type: "bar",
+            data: ydata
           }
-        }
-      });
+        ]
+      };
     },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const ticketIds = row.ticketId || this.ids;
-      this.$modal.confirm('是否确认删除投票信息编号为"' + ticketIds + '"的数据项？').then(function() {
-        return delInfo(ticketIds);
-      }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
-      }).catch(() => {});
+    // 设置折线图图数据
+    setLineOption(list){
+      var xdata = [];
+      var ydata = [];
+      for (let i = 0; i < list.length; i++) {
+        xdata.push("第" + list[i].time + "期")
+        ydata.push(list[i].ticketNumber)
+      }
+      this.lineOption = {
+        xAxis: {
+          type: 'category',
+          data: xdata
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [
+          {
+            data: ydata,
+            type: 'line',
+            smooth: true,
+            label: {
+              show: true,	// 是否可见
+              rotate: 0 	// 旋转角度
+            },
+            areaStyle: {
+              color: '#409EFF'
+            }
+          }
+        ]
+      };
+    },
+    // 渲染柱状图
+    drawChart() {
+      listInfo(this.queryParams).then(response => {
+        this.setBarOption(response.rows);
+        this.barChart = this.$echarts.init(document.getElementById("barChart"),'theme');
+        this.barChart.setOption(this.barOption, true);
+        const that = this
+        this.barChart.on('click', function(params) {
+          that.chartOpen = true;
+          that.chartTitle = params.name + "近几期投票图"
+          that.queryParams.dishesName = params.name
+        })
+      })
+    },
+    // 重新渲染柱状图
+    RenderChart(){
+      this.barChart = this.$echarts.init(document.getElementById("barChart"),'theme');
+      this.barChart.showLoading();
+      listInfo(this.queryParams).then((response) => {
+        this.setBarOption(response.rows);
+        this.barChart.setOption(this.barOption, true);
+        this.barChart.hideLoading();
+      })
+    },
+    // 打开折线图函数
+    openLine(){
+      this.$nextTick(() =>{
+        this.lineChart = this.$echarts.init(document.getElementById("lineChart"),'theme')
+        this.lineChart.showLoading();
+        getDishTicketInfo(this.queryParams).then((response) => {
+          this.setLineOption(response.data);
+          this.lineChart.setOption(this.lineOption)
+          this.lineChart.hideLoading();
+        })
+      })
     },
     /** 导出按钮操作 */
     handleExport() {
@@ -259,7 +211,17 @@ export default {
         this.$download.name(response.msg);
         this.exportLoading = false;
       }).catch(() => {});
-    }
+    },
+    // 期数单击事件
+    handlePeriodsClick(data) {
+      this.queryParams.time = data
+      this.RenderChart()
+    },
+    // 清空期数事件
+    handClearPeriodsClick(){
+      this.queryParams.time = undefined;
+      this.RenderChart()
+    },
   }
 };
 </script>
