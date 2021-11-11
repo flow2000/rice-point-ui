@@ -168,7 +168,7 @@ export default {
     // 渲染柱状图
     drawChart() {
       listInfo(this.queryParams).then(response => {
-        this.setBarOption(response.rows);
+        this.setBarOption(response.data);
         this.barChart = this.$echarts.init(document.getElementById("barChart"),'theme');
         this.barChart.setOption(this.barOption, true);
         const that = this
@@ -184,7 +184,7 @@ export default {
       this.barChart = this.$echarts.init(document.getElementById("barChart"),'theme');
       this.barChart.showLoading();
       listInfo(this.queryParams).then((response) => {
-        this.setBarOption(response.rows);
+        this.setBarOption(response.data);
         this.barChart.setOption(this.barOption, true);
         this.barChart.hideLoading();
       })
