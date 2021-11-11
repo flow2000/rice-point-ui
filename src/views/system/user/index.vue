@@ -1,8 +1,33 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-      <!--部门数据-->
       <el-col :span="4" :xs="24">
+        <div class="head-container">
+          <el-form>
+            <el-form-item  prop="role">
+              <el-select
+                v-model="queryParams.role"
+                placeholder="请选择角色"
+                clearable
+                prefix-icon="el-icon-search"
+                size="small"
+                style="width: 100%"
+                @clear="handClearRoleClick"
+              >
+                <el-option
+                  v-for="item in roleOptions"
+                  :key="item.roleId"
+                  :label="item.roleName"
+                  :value="item.roleId"
+                  :disabled="item.status === 1"
+                  @click.native="handleRoleClick(item.roleName)"
+                />
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </div>
+
+        <!--部门数据-->
         <div class="head-container">
           <el-input
             v-model="deptName"
@@ -418,7 +443,8 @@ export default {
         userName: undefined,
         phonenumber: undefined,
         status: undefined,
-        deptId: undefined
+        deptId: undefined,
+        roleName: undefined,
       },
       // 列信息
       columns: [
@@ -483,6 +509,9 @@ export default {
           this.loading = false;
         }
       );
+      getUser().then(response => {
+        this.roleOptions = response.roles;
+      });
     },
     /** 查询部门下拉树结构 */
     getTreeselect() {
@@ -499,6 +528,16 @@ export default {
     handleNodeClick(data) {
       this.queryParams.deptId = data.id;
       this.getList();
+    },
+    // 角色单击事件
+    handleRoleClick(data) {
+      this.queryParams.roleName = data
+      this.getList()
+    },
+    // 清空角色事件
+    handClearRoleClick(){
+      this.queryParams.roleName = undefined;
+      this.getList()
     },
     // 用户状态修改
     handleStatusChange(row) {
