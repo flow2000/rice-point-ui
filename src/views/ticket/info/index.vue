@@ -204,7 +204,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       const queryParams = this.queryParams;
-      this.$modal.confirm('是否确认导出所有投票信息数据项？').then(() => {
+      this.$modal.confirm('是否确认导出该期投票信息数据项？').then(() => {
         this.exportLoading = true;
         return exportInfo(queryParams);
       }).then(response => {
