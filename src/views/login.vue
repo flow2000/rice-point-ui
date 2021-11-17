@@ -151,6 +151,15 @@ export default {
     }
   }
 };
+
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?f2106f63339e18f0bb31064c31dab754";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+
 </script>
 
 <style rel="stylesheet/scss" lang="scss">
