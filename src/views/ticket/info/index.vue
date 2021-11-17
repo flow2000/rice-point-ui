@@ -113,7 +113,7 @@ export default {
       }
       this.barOption = {
         title: {
-          text: "第" + list[0].time + "期菜品投票信息",
+          text: "第" + list[0].time + "期菜品前十名投票信息",
           left: 50,
         },
         tooltip: {},
@@ -121,7 +121,11 @@ export default {
           data: ["票数"]
         },
         xAxis: {
-          data: xdata
+          data: xdata,
+          "axisLabel":{
+            interval: 0,
+            rotate:-30
+          }
         },
         yAxis: {},
         series: [
