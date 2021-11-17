@@ -31,7 +31,7 @@
         <div class="head-container">
           <el-input
             v-model="deptName"
-            placeholder="请输入部门名称"
+            placeholder="请输入学院名称"
             clearable
             size="small"
             prefix-icon="el-icon-search"
@@ -53,10 +53,10 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-          <el-form-item label="用户名称" prop="userName">
+          <el-form-item label="帐号" prop="userName">
             <el-input
               v-model="queryParams.userName"
-              placeholder="请输入用户名称"
+              placeholder="请输入帐号"
               clearable
               size="small"
               style="width: 240px"
@@ -167,9 +167,9 @@
         <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
-          <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="部门" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="帐号" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="姓名" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="学院" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
           <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" width="120" />
           <el-table-column label="状态" align="center" key="status" v-if="columns[5].visible">
             <template slot-scope="scope">
@@ -237,13 +237,13 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户昵称" prop="nickName">
-              <el-input v-model="form.nickName" placeholder="请输入用户昵称" maxlength="30" />
+            <el-form-item label="姓名" prop="nickName">
+              <el-input v-model="form.nickName" placeholder="请输入姓名" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="归属部门" prop="deptId">
-              <treeselect v-model="form.deptId" :options="deptOptions" :show-count="true" placeholder="请选择归属部门" />
+            <el-form-item label="学院" prop="deptId">
+              <treeselect v-model="form.deptId" :options="deptOptions" :show-count="true" placeholder="请选择学院" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -261,19 +261,19 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户名称" prop="userName">
-              <el-input v-model="form.userName" placeholder="请输入用户名称" maxlength="30" />
+            <el-form-item v-if="form.userId == undefined" label="帐号" prop="userName">
+              <el-input v-model="form.userName" placeholder="帐号" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户密码" prop="password">
-              <el-input v-model="form.password" placeholder="请输入用户密码" type="password" maxlength="20" show-password/>
+            <el-form-item v-if="form.userId == undefined" label="密码" prop="password">
+              <el-input v-model="form.password" placeholder="请输入密码" type="password" maxlength="20" show-password/>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户性别">
+            <el-form-item label="性别">
               <el-select v-model="form.sex" placeholder="请选择">
                 <el-option
                   v-for="dict in dict.type.sys_user_sex"
@@ -448,10 +448,10 @@ export default {
       },
       // 列信息
       columns: [
-        { key: 0, label: `用户编号`, visible: true },
-        { key: 1, label: `用户名称`, visible: true },
-        { key: 2, label: `用户昵称`, visible: true },
-        { key: 3, label: `部门`, visible: true },
+        { key: 0, label: `用户编号`, visible: false },
+        { key: 1, label: `帐号`, visible: true },
+        { key: 2, label: `姓名`, visible: true },
+        { key: 3, label: `学院`, visible: true },
         { key: 4, label: `手机号码`, visible: true },
         { key: 5, label: `状态`, visible: true },
         { key: 6, label: `创建时间`, visible: true }
@@ -459,15 +459,15 @@ export default {
       // 表单校验
       rules: {
         userName: [
-          { required: true, message: "用户名称不能为空", trigger: "blur" },
-          { min: 2, max: 20, message: '用户名称长度必须介于 2 和 20 之间', trigger: 'blur' }
+          { required: true, message: "帐号不能为空", trigger: "blur" },
+          { min: 2, max: 20, message: '帐号长度必须介于 2 和 20 之间', trigger: 'blur' }
         ],
         nickName: [
-          { required: true, message: "用户昵称不能为空", trigger: "blur" }
+          { required: true, message: "姓名不能为空", trigger: "blur" }
         ],
         password: [
-          { required: true, message: "用户密码不能为空", trigger: "blur" },
-          { min: 5, max: 20, message: '用户密码长度必须介于 5 和 20 之间', trigger: 'blur' }
+          { required: true, message: "密码不能为空", trigger: "blur" },
+          { min: 5, max: 20, message: '密码长度必须介于 5 和 20 之间', trigger: 'blur' }
         ],
         email: [
           {
