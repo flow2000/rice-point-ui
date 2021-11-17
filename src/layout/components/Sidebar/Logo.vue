@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      title: '饭点管理系统',
+      title: '饭点后台管理系统',
       logo: logoImg
     }
   }
