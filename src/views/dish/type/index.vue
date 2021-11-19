@@ -77,8 +77,6 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" />
-      <el-table-column label="修改时间" align="center" prop="updateTime" />
       <el-table-column label="状态" align="center" prop="status" >
         <template slot-scope="scope">
           <el-switch

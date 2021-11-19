@@ -3,16 +3,6 @@
     <el-row :gutter="20">
       <!--食堂数据-->
       <el-col :span="4" :xs="24">
-        <div class="head-container">
-          <el-input
-            v-model="canteenName"
-            placeholder="请输入食堂名称"
-            clearable
-            size="small"
-            prefix-icon="el-icon-search"
-            style="margin-bottom: 20px"
-          />
-        </div>
         <div class="head-container" style="position: center">
           <div class="btn">
             <el-button style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
@@ -23,7 +13,6 @@
             :data="canteenOptions"
             :props="defaultProps"
             :expand-on-click-node="false"
-            :filter-node-method="filterNode"
             ref="tree"
             default-expand-all
             @node-click="handleNodeClick"
@@ -455,13 +444,6 @@ export default {
       }).catch(function() {
         row.status = row.status === '0' ? '1' : '0'
       })
-    },
-    // 筛选节点
-    filterNode(value, data) {
-      console.log(value)
-      console.log(data)
-      if (!value) return true;
-      return data.label.indexOf(value) !== -1;
     },
     // 节点单击事件
     handleNodeClick(data) {
