@@ -279,8 +279,9 @@ export default {
           { required: true, message: '菜品名称不能为空', trigger: 'blur' },
           { min: 2, max: 20, message: '菜品名称长度必须介于 2 和 20 之间', trigger: 'blur' }
         ],
-        typeId: [
-          { required: true, message: '食堂类型不能为空', trigger: 'blur' }
+        price: [
+          { required: true, message: '菜品价格不能为空', trigger: 'blur' },
+          { pattern: /^(0\.\d{0,1}[1-9]|\+?[1-9][0-9]{0,3})(\.\d{1,2})?$/, message: '请输入0-10000之间且小于2位小数的金额', trigger: 'blur' }
         ],
         canteenIds: [
           { required: true, message: '所属食堂不能为空', trigger: 'blur' }
