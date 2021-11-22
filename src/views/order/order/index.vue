@@ -52,27 +52,34 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="orderList" @selection-change="handleSelectionChange">
-      <el-table-column label="取餐号码" align="center" prop="mealNumber" />
-      <el-table-column label="订单状态" align="center" prop="status">
+    <el-table v-loading="loading" :data="orderList" :show-header="false">
+      <el-table-column prop="name">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.order_status" :value="scope.row.status"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d} {hh}:{mm}:{ss}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-menu"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['order:order:edit']"
-          >处理</el-button>
+          <div class="tab_header">
+            <span><b>订单号：{{scope.row.orderCode}}</b></span>
+            <span><b>取餐号：{{scope.row.mealNumber}}</b></span>
+            <span><b>创建时间：{{scope.row.createTime}}</b></span>
+            <div>
+              <el-button size="mini"
+                         type="primary"
+                         icon="el-icon-edit"
+                         @click="handleEdit(scope.row)"
+                         v-hasPermi="['order:order:edit']"
+              >处理订单</el-button>
+            </div>
+          </div>
+          <el-table :data="scope.row.dishOrders" show-summary	:summary-method="getSummaries" >
+            <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
+            <el-table-column align="center" label="价格">
+              <template slot-scope="scope"><span>{{scope.row.price}}元/份</span></template>
+            </el-table-column>
+            <el-table-column align="center" label="数量">
+              <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
+            </el-table-column>
+            <el-table-column align="center" label="小计" >
+              <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
+            </el-table-column>
+          </el-table>
         </template>
       </el-table-column>
     </el-table>
@@ -88,14 +95,23 @@
     <!-- 添加或修改订单对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="取餐号码" prop="orderCode">
+        <el-form-item label="取餐号码" prop="mealNumber">
           <el-input v-model="form.mealNumber" disabled />
         </el-form-item>
-
-        <el-form-item label="合计" prop="orderPrice">
-          <el-input v-model="form.orderPrice" disabled />
-        </el-form-item>
-        <el-form-item label="订单状态">
+        <el-table :data="form.dishOrders" show-summary :summary-method="getSummaries">
+          <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
+          <el-table-column align="center" label="价格">
+            <template slot-scope="scope"><span>{{scope.row.price}}元/份</span></template>
+          </el-table-column>
+          <el-table-column align="center" label="数量">
+            <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
+          </el-table-column>
+          <el-table-column align="center" label="小计" >
+            <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
+          </el-table-column>
+        </el-table>
+        <el-form-item />
+        <el-form-item label="处理选项">
           <el-radio-group v-model="form.status">
             <el-radio-button
               v-for="dict in dict.type.order_status"
@@ -206,29 +222,12 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
-      console.log(this.queryParams)
       this.getList();
     },
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
       this.handleQuery();
-    },
-    // 多选框选中数据
-    handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.orderId)
-      this.single = selection.length!==1
-      this.multiple = !selection.length
-    },
-    /** 处理按钮操作 */
-    handleUpdate(row) {
-      this.reset();
-      const orderId = row.orderId || this.ids
-      getOrder(orderId).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "处理订单";
-      });
     },
     /** 提交按钮 */
     submitForm() {
@@ -255,7 +254,7 @@ export default {
         this.exportLoading = false;
       }).catch(() => {});
     },
-    // 动态查询
+    // 动态查询订单处理失败原因
     querySearchAsync(queryString,cb){
       let errorList = this.orderError;
       //增加value属性
@@ -268,9 +267,57 @@ export default {
     // 创建一个过滤器
     createStateFilter (queryString) {
       return (state) => {
-        return (state.dictLabel.indexOf(queryString) === 0);
+        return state.dictLabel.indexOf(queryString) === 0 && state.dictLabel !== queryString;
       };
     },
+
+    /** 订单处理操作 */
+    handleEdit(row) {
+      this.reset();
+      const orderId = row.orderId || this.ids
+      getOrder(orderId).then(response => {
+        this.form = response.data;
+        this.open = true;
+        this.title = "处理订单";
+      });
+    },
+
+    /** 合并列操作 */
+    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+      if (columnIndex === 3) {
+        return {
+          colspan: 0,
+        }
+      }
+    },
+
+    /** 合计行操作 */
+    getSummaries(param) {
+      const data = param.data;
+      const sums = [];
+      let sum = 0;
+      sums[0] = "总价";
+      for (let i = 0; i < data.length; i++) {
+        sum += data[i].number * data[i].price;
+      }
+      sums[3] = sum + "元";
+      return sums;
+    },
+
+
   }
 };
 </script>
+<style lang="scss">
+  .tab_header {
+    color: #333;
+    padding: 0 5px 0 5px;
+    height: 45px;
+    line-height: 45px;
+    border: 1px solid #F8F8F9;
+    display: flex;
+    justify-content: space-between;
+    background: #F8F8F9;
+  }
+</style>
+
