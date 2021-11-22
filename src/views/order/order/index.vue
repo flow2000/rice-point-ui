@@ -1,6 +1,16 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="订单号" prop="orderCode">
+        <el-input
+          v-model="queryParams.orderCode"
+          placeholder="请输入订单号"
+          clearable
+          size="small"
+          prefix-icon="el-icon-search"
+          style="margin-bottom: 20px"
+        />
+      </el-form-item>
       <el-form-item label="取餐号" prop="mealNumber">
         <el-input
           v-model="queryParams.mealNumber"
@@ -10,16 +20,6 @@
           prefix-icon="el-icon-search"
           style="margin-bottom: 20px"
         />
-      </el-form-item>
-      <el-form-item label="订单状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择订单状态" clearable size="small">
-          <el-option
-            v-for="dict in dict.type.order_status"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
-        </el-select>
       </el-form-item>
       <el-form-item label="创建时间" prop="timeList">
         <el-date-picker
@@ -172,7 +172,7 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        status: null,
+        orderCode: null,
         createTime: null,
         timeList: null,
         mealNumber: null
