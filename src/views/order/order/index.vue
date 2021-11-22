@@ -56,9 +56,9 @@
       <el-table-column prop="name">
         <template slot-scope="scope">
           <div class="tab_header">
-            <span><b>订单号：{{scope.row.orderCode}}</b></span>
+            <span>订单号：{{scope.row.orderCode}}</span>
             <span><b>取餐号：{{scope.row.mealNumber}}</b></span>
-            <span><b>创建时间：{{scope.row.createTime}}</b></span>
+            <span>创建时间：{{scope.row.createTime}}</span>
             <div>
               <el-button size="mini"
                          type="primary"
@@ -318,6 +318,11 @@ export default {
     display: flex;
     justify-content: space-between;
     background: #F8F8F9;
+  }
+  .el-table__footer-wrapper tbody td{
+    background-color: #FFFFFF;
+    color: #000000;
+    font-weight: bold;
   }
 </style>
 
