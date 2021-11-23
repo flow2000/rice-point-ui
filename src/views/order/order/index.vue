@@ -9,6 +9,7 @@
           size="small"
           prefix-icon="el-icon-search"
           style="margin-bottom: 20px"
+          @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       <el-form-item label="取餐号" prop="mealNumber">
@@ -18,6 +19,7 @@
           clearable
           size="small"
           prefix-icon="el-icon-search"
+          @keyup.enter.native="handleQuery"
           style="margin-bottom: 20px"
         />
       </el-form-item>
@@ -47,7 +49,8 @@
           :loading="exportLoading"
           @click="handleExport"
           v-hasPermi="['order:order:export']"
-        >导出</el-button>
+        >导出
+        </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -56,19 +59,20 @@
       <el-table-column prop="name">
         <template slot-scope="scope">
           <div class="tab_header">
+            <span>{{scope.row.createTime}}</span>
             <span>订单号：{{scope.row.orderCode}}</span>
             <span><b>取餐号：{{scope.row.mealNumber}}</b></span>
-            <span>创建时间：{{scope.row.createTime}}</span>
             <div>
               <el-button size="mini"
                          type="primary"
                          icon="el-icon-edit"
                          @click="handleEdit(scope.row)"
                          v-hasPermi="['order:order:edit']"
-              >处理订单</el-button>
+              >处理订单
+              </el-button>
             </div>
           </div>
-          <el-table :data="scope.row.dishOrders" show-summary	:summary-method="getSummaries" >
+          <el-table :data="scope.row.dishOrders" show-summary :summary-method="getSummaries">
             <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
             <el-table-column align="center" label="价格">
               <template slot-scope="scope"><span>{{scope.row.price}}元/份</span></template>
@@ -76,7 +80,7 @@
             <el-table-column align="center" label="数量">
               <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
             </el-table-column>
-            <el-table-column align="center" label="小计" >
+            <el-table-column align="center" label="小计">
               <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
             </el-table-column>
           </el-table>
@@ -96,7 +100,7 @@
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="取餐号码" prop="mealNumber">
-          <el-input v-model="form.mealNumber" disabled />
+          <el-input v-model="form.mealNumber" disabled/>
         </el-form-item>
         <el-table :data="form.dishOrders" show-summary :summary-method="getSummaries">
           <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
@@ -106,11 +110,11 @@
           <el-table-column align="center" label="数量">
             <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
           </el-table-column>
-          <el-table-column align="center" label="小计" >
+          <el-table-column align="center" label="小计">
             <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
           </el-table-column>
         </el-table>
-        <el-form-item />
+        <el-form-item/>
         <el-form-item label="处理选项">
           <el-radio-group v-model="form.status">
             <el-radio-button
@@ -118,7 +122,8 @@
               v-if="dict.value!=='0'&&dict.value!=='3'"
               :key="dict.value"
               :label="dict.value"
-            >{{dict.label}}</el-radio-button>
+            >{{dict.label}}
+            </el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="失败理由" prop="errorReason" v-show="form.status==='2'">
@@ -139,174 +144,175 @@
 </template>
 
 <script>
-import { listOrder, getOrder, updateOrder, exportOrder } from "@/api/order/order";
+  import { listOrder, getOrder, updateOrder, exportOrder } from '@/api/order/order'
 
-export default {
-  name: "Order",
-  dicts: ['order_status'],
-  data() {
-    return {
-      // 遮罩层
-      loading: true,
-      // 导出遮罩层
-      exportLoading: false,
-      // 选中数组
-      ids: [],
-      // 非单个禁用
-      single: true,
-      // 非多个禁用
-      multiple: true,
-      // 显示搜索条件
-      showSearch: true,
-      // 总条数
-      total: 0,
-      // 订单表格数据
-      orderList: [],
-      // 订单失败提示原因数组
-      orderError: [],
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
-      open: false,
-      // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        orderCode: null,
-        createTime: null,
-        timeList: null,
-        mealNumber: null
-      },
-      // 表单参数
-      form: {},
-      // 表单校验
-      rules: {
+  export default {
+    name: 'Order',
+    dicts: ['order_status'],
+    data() {
+      return {
+        // 遮罩层
+        loading: true,
+        // 导出遮罩层
+        exportLoading: false,
+        // 选中数组
+        ids: [],
+        // 非单个禁用
+        single: true,
+        // 非多个禁用
+        multiple: true,
+        // 显示搜索条件
+        showSearch: true,
+        // 总条数
+        total: 0,
+        // 订单表格数据
+        orderList: [],
+        // 订单失败提示原因数组
+        orderError: [],
+        // 弹出层标题
+        title: '',
+        // 是否显示弹出层
+        open: false,
+        // 查询参数
+        queryParams: {
+          pageNum: 1,
+          pageSize: 10,
+          orderCode: null,
+          createTime: null,
+          timeList: null,
+          mealNumber: null
+        },
+        // 表单参数
+        form: {},
+        // 表单校验
+        rules: {},
       }
-    };
-  },
-  created() {
-    this.getList();
-    this.getDicts('order_error').then(response => {
-      this.orderError = response.data
-    })
-  },
-  methods: {
-    /** 查询订单列表 */
-    getList() {
-      this.loading = true;
-      listOrder(this.queryParams).then(response => {
-        this.orderList = response.rows;
-        this.total = response.total;
-        this.loading = false;
-      });
     },
-    // 取消按钮
-    cancel() {
-      this.open = false;
-      this.reset();
+    created() {
+      this.getList()
+      this.getDicts('order_error').then(response => {
+        this.orderError = response.data
+      })
     },
-    // 表单重置
-    reset() {
-      this.form = {
-        orderId: null,
-        orderCode: null,
-        canteenId: null,
-        orderPrice: null,
-        status: "0",
-        delFlag: null,
-        createTime: null,
-        errorReason: null,
-      };
-      this.resetForm("form");
-    },
-    /** 搜索按钮操作 */
-    handleQuery() {
-      this.queryParams.pageNum = 1;
-      this.getList();
-    },
-    /** 重置按钮操作 */
-    resetQuery() {
-      this.resetForm("queryForm");
-      this.handleQuery();
-    },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (this.form.orderId != null) {
-            updateOrder(this.form).then(response => {
-              this.$modal.msgSuccess("操作成功");
-              this.open = false;
-              this.getList();
-            });
+    methods: {
+      /** 查询订单列表 */
+      getList() {
+        this.loading = true
+        const number = this.queryParams.mealNumber;
+        var patrn = /^[0-9]*$/;
+        if (number === "" || number === undefined || number === " " || !patrn.test(number)) {
+          this.queryParams.mealNumber = null
+        }
+        listOrder(this.queryParams).then(response => {
+          this.orderList = response.rows
+          this.total = response.total
+          this.loading = false
+        })
+      },
+      // 取消按钮
+      cancel() {
+        this.open = false
+        this.reset()
+      },
+      // 表单重置
+      reset() {
+        this.form = {
+          orderId: null,
+          orderCode: null,
+          canteenId: null,
+          orderPrice: null,
+          status: '0',
+          delFlag: null,
+          createTime: null,
+          errorReason: null
+        }
+        this.resetForm('form')
+      },
+      /** 搜索按钮操作 */
+      handleQuery() {
+        this.queryParams.pageNum = 1
+        this.getList()
+      },
+      /** 重置按钮操作 */
+      resetQuery() {
+        this.resetForm('queryForm')
+        this.handleQuery()
+      },
+      /** 提交按钮 */
+      submitForm() {
+        this.$refs['form'].validate(valid => {
+          if (valid) {
+            if (this.form.orderId != null) {
+              updateOrder(this.form).then(response => {
+                this.$modal.msgSuccess('操作成功')
+                this.open = false
+                this.getList()
+              })
+            }
+          }
+        })
+      },
+      /** 导出按钮操作 */
+      handleExport() {
+        const queryParams = this.queryParams
+        this.$modal.confirm('是否确认导出所有订单数据项？').then(() => {
+          this.exportLoading = true
+          return exportOrder(queryParams)
+        }).then(response => {
+          this.$download.name(response.msg)
+          this.exportLoading = false
+        }).catch(() => {
+        })
+      },
+      // 动态查询订单处理失败原因
+      querySearchAsync(queryString, cb) {
+        let errorList = this.orderError
+        //增加value属性
+        for (let i = 0; i < errorList.length; i++) {
+          errorList[i]['value'] = errorList[i].dictLabel
+        }
+        var results = queryString ? errorList.filter(this.createStateFilter(queryString)) : errorList
+        cb(results)
+      },
+      // 创建一个过滤器
+      createStateFilter(queryString) {
+        return (state) => {
+          return state.dictLabel.indexOf(queryString) === 0 && state.dictLabel !== queryString
+        }
+      },
+      /** 订单处理操作 */
+      handleEdit(row) {
+        this.reset()
+        const orderId = row.orderId || this.ids
+        getOrder(orderId).then(response => {
+          this.form = response.data
+          this.open = true
+          this.title = '处理订单'
+        })
+      },
+      /** 合并列操作 */
+      objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+        if (columnIndex === 3) {
+          return {
+            colspan: 0
           }
         }
-      });
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      const queryParams = this.queryParams;
-      this.$modal.confirm('是否确认导出所有订单数据项？').then(() => {
-        this.exportLoading = true;
-        return exportOrder(queryParams);
-      }).then(response => {
-        this.$download.name(response.msg);
-        this.exportLoading = false;
-      }).catch(() => {});
-    },
-    // 动态查询订单处理失败原因
-    querySearchAsync(queryString,cb){
-      let errorList = this.orderError;
-      //增加value属性
-      for (let i = 0; i < errorList.length; i++) {
-        errorList[i]["value"] = errorList[i].dictLabel
-      }
-      var results = queryString ? errorList.filter(this.createStateFilter(queryString)) : errorList;
-      cb(results);
-    },
-    // 创建一个过滤器
-    createStateFilter (queryString) {
-      return (state) => {
-        return state.dictLabel.indexOf(queryString) === 0 && state.dictLabel !== queryString;
-      };
-    },
-
-    /** 订单处理操作 */
-    handleEdit(row) {
-      this.reset();
-      const orderId = row.orderId || this.ids
-      getOrder(orderId).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "处理订单";
-      });
-    },
-
-    /** 合并列操作 */
-    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex === 3) {
-        return {
-          colspan: 0,
+      },
+      /** 合计行操作 */
+      getSummaries(param) {
+        const data = param.data
+        const sums = []
+        let sum = 0
+        sums[0] = '总价'
+        for (let i = 0; i < data.length; i++) {
+          sum += data[i].number * data[i].price
         }
-      }
-    },
+        sums[3] = sum + '元'
+        return sums
+      },
 
-    /** 合计行操作 */
-    getSummaries(param) {
-      const data = param.data;
-      const sums = [];
-      let sum = 0;
-      sums[0] = "总价";
-      for (let i = 0; i < data.length; i++) {
-        sum += data[i].number * data[i].price;
-      }
-      sums[3] = sum + "元";
-      return sums;
-    },
-
-
+    }
   }
-};
 </script>
 <style lang="scss">
   .tab_header {
@@ -319,7 +325,8 @@ export default {
     justify-content: space-between;
     background: #F8F8F9;
   }
-  .el-table__footer-wrapper tbody td{
+
+  .el-table__footer-wrapper tbody td {
     background-color: #FFFFFF;
     color: #000000;
     font-weight: bold;
