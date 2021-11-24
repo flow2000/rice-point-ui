@@ -310,6 +310,7 @@ export default {
     },
     /** 查询菜品类型 */
     getType(){
+      this.queryParams.pageNum = null
       listType(this.queryParams).then(response => {
         this.dishesType = response.rows;
         this.typeTotal = response.total;
