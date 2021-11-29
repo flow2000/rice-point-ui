@@ -1,102 +1,148 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="订单号" prop="orderCode">
-        <el-input
-          v-model="queryParams.orderCode"
-          placeholder="请输入订单号"
-          clearable
-          size="small"
-          prefix-icon="el-icon-search"
-          style="margin-bottom: 20px"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="取餐号" prop="mealNumber">
-        <el-input
-          v-model="queryParams.mealNumber"
-          placeholder="请输入取餐号"
-          clearable
-          size="small"
-          prefix-icon="el-icon-search"
-          @keyup.enter.native="handleQuery"
-          style="margin-bottom: 20px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="timeList">
-        <el-date-picker
-          v-model="queryParams.timeList"
-          type="datetimerange"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          :loading="exportLoading"
-          @click="handleExport"
-          v-hasPermi="['order:order:export']"
-        >导出
-        </el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
-    <el-table v-loading="loading" :data="orderList" :show-header="false">
-      <el-table-column prop="name">
-        <template slot-scope="scope">
-          <div class="tab_header">
-            <span>{{scope.row.createTime}}</span>
-            <span>订单号：{{scope.row.orderCode}}</span>
-            <span><b>取餐号：{{scope.row.mealNumber}}</b></span>
-            <div>
-              <el-button size="mini"
-                         type="primary"
-                         icon="el-icon-edit"
-                         @click="handleEdit(scope.row)"
-                         v-hasPermi="['order:order:edit']"
-              >处理订单
-              </el-button>
-            </div>
+    <el-row :gutter="20">
+      <!--食堂数据-->
+      <el-col :span="4" :xs="24">
+        <div class="head-container" style="position: center">
+          <div class="btn">
+            <el-button style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
+              全部食堂
+            </el-button>
           </div>
-          <el-table :data="scope.row.dishOrders" show-summary :summary-method="getSummaries">
-            <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
-            <el-table-column align="center" label="价格">
-              <template slot-scope="scope"><span>{{scope.row.price}}元/份</span></template>
-            </el-table-column>
-            <el-table-column align="center" label="数量">
-              <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
-            </el-table-column>
-            <el-table-column align="center" label="小计">
-              <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
-            </el-table-column>
-          </el-table>
-        </template>
-      </el-table-column>
-    </el-table>
+          <el-tree
+            :data="canteenOptions"
+            :props="defaultProps"
+            :expand-on-click-node="false"
+            ref="tree"
+            default-expand-all
+            @node-click="handleNodeClick"
+          />
+        </div>
+      </el-col>
+      <!--订单数据-->
+      <el-col :span="20" :xs="24">
+        <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+          <el-form-item label="订单号" prop="orderCode">
+            <el-input
+              v-model="queryParams.orderCode"
+              placeholder="请输入订单号"
+              clearable
+              size="small"
+              prefix-icon="el-icon-search"
+              style="margin-bottom: 20px"
+              @keyup.enter.native="handleQuery"
+            />
+          </el-form-item>
+          <el-form-item label="取餐号" prop="mealNumber">
+            <el-input
+              v-model="queryParams.mealNumber"
+              placeholder="请输入取餐号"
+              clearable
+              size="small"
+              prefix-icon="el-icon-search"
+              @keyup.enter.native="handleQuery"
+              style="margin-bottom: 20px"
+            />
+          </el-form-item>
+          <el-form-item label="订单状态" prop="status">
+            <el-select v-model="queryParams.status" placeholder="请选择订单状态" clearable size="small">
+              <el-option
+                v-for="s in statusOptions"
+                :value="s.dictValue"
+                :label="s.dictLabel">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="创建时间" prop="timeList">
+            <el-date-picker
+              v-model="queryParams.timeList"
+              type="datetimerange"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期">
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+          </el-form-item>
+        </el-form>
 
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="queryParams.pageNum"
-      :limit.sync="queryParams.pageSize"
-      @pagination="getList"
-    />
+        <el-row :gutter="10" class="mb8">
+          <el-col :span="1.5">
+            <el-button
+              type="warning"
+              plain
+              icon="el-icon-download"
+              size="mini"
+              :loading="exportLoading"
+              @click="handleExport"
+              v-hasPermi="['order:order:export']"
+            >导出
+            </el-button>
+          </el-col>
+          <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+        </el-row>
 
-    <!-- 添加或修改订单对话框 -->
+        <el-table v-loading="loading" :data="orderList" :show-header="false">
+          <el-table-column prop="name">
+            <template slot-scope="scope">
+              <div class="tab_header">
+                <span>{{scope.row.createTime}}</span>
+                <span>订单号：{{scope.row.orderCode}}</span>
+                <span><b>取餐号：{{scope.row.mealNumber}}</b></span>
+                <el-tag v-if="scope.row.status === '0'" type="warning">未处理</el-tag>
+                <el-tag v-if="scope.row.status === '1'" type="success">已完成</el-tag>
+                <el-tag v-if="scope.row.status === '2'" type="danger">处理失败</el-tag>
+                <el-tag v-if="scope.row.status === '3'" type="info">已取消</el-tag>
+                <div>
+                  <div v-if="scope.row.status === '0'">
+                    <el-button size="mini"
+                               type="primary"
+                               icon="el-icon-edit"
+                               @click="handleEdit(scope.row)"
+                               v-hasPermi="['order:order:edit']"
+                    >处理订单
+                    </el-button>
+                  </div>
+                  <div v-if="scope.row.status !== '0'">
+                    <el-button size="mini"
+                               type="success"
+                               icon="el-icon-s-claim"
+                               @click="handleEdit(scope.row)"
+                               v-hasPermi="['order:order:edit']"
+                    >查看订单
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+              <el-table :data="scope.row.dishOrders" show-summary :summary-method="getSummaries">
+                <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
+                <el-table-column align="center" label="价格">
+                  <template slot-scope="scope"><span>{{scope.row.price}}元/份</span></template>
+                </el-table-column>
+                <el-table-column align="center" label="数量">
+                  <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
+                </el-table-column>
+                <el-table-column align="center" label="小计">
+                  <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
+                </el-table-column>
+              </el-table>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <pagination
+          v-show="total>0"
+          :total="total"
+          :page.sync="queryParams.pageNum"
+          :limit.sync="queryParams.pageSize"
+          @pagination="getList"
+        />
+      </el-col>
+    </el-row>
+    <!-- 处理订单对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="取餐号码" prop="mealNumber">
@@ -136,8 +182,15 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button v-if="form.status === '0'" type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">
+          <span v-if="form.status === '0'">
+            取 消
+          </span>
+          <span v-if="form.status !== '0'">
+            了 解
+          </span>
+        </el-button>
       </div>
     </el-dialog>
   </div>
@@ -145,6 +198,7 @@
 
 <script>
   import { listOrder, getOrder, updateOrder, exportOrder } from '@/api/order/order'
+  import { treeselect } from  "@/api/canteen/info"
 
   export default {
     name: 'Order',
@@ -165,6 +219,10 @@
         showSearch: true,
         // 总条数
         total: 0,
+        // 食堂数据
+        canteenOptions: [],
+        // 食堂数量
+        canteenTotal: 0,
         // 订单表格数据
         orderList: [],
         // 订单失败提示原因数组
@@ -173,6 +231,8 @@
         title: '',
         // 是否显示弹出层
         open: false,
+        // 订单状态数组
+        statusOptions: null,
         // 查询参数
         queryParams: {
           pageNum: 1,
@@ -184,14 +244,24 @@
         },
         // 表单参数
         form: {},
+        defaultProps: {
+          children: "children",
+          label: "label",
+          disabled: "disabled"
+        },
         // 表单校验
         rules: {},
       }
     },
     created() {
       this.getList()
+      this.getCanteen();
       this.getDicts('order_error').then(response => {
         this.orderError = response.data
+      })
+      this.getDicts('order_status').then(response => {
+        this.statusOptions = response.data
+        console.log(this.statusOptions)
       })
     },
     methods: {
@@ -208,6 +278,23 @@
           this.total = response.total
           this.loading = false
         })
+      },
+      /** 查询食堂下拉列表 */
+      getCanteen(){
+        treeselect().then(response => {
+          this.canteenOptions = response.data;
+          this.canteenTotal = response.total;
+        });
+      },
+      // 节点单击事件
+      handleNodeClick(data) {
+        this.queryParams.canteenId = data.id;
+        this.getList();
+      },
+      // 单击全部食堂事件
+      selectCanteen(){
+        this.queryParams.canteenId = null;
+        this.getList();
       },
       // 取消按钮
       cancel() {
@@ -232,6 +319,7 @@
       handleQuery() {
         this.queryParams.pageNum = 1
         this.getList()
+        console.log(this.queryParams)
       },
       /** 重置按钮操作 */
       resetQuery() {
@@ -287,7 +375,7 @@
         getOrder(orderId).then(response => {
           this.form = response.data
           this.open = true
-          this.title = '处理订单'
+          this.form.status === '0'?this.title = '处理订单':this.title = '查看订单'
         })
       },
       /** 合并列操作 */
