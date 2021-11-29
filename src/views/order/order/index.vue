@@ -331,5 +331,9 @@
     color: #000000;
     font-weight: bold;
   }
+
+  .el-range-editor--medium.el-input__inner{
+    height: 32px;
+  }
 </style>
 
