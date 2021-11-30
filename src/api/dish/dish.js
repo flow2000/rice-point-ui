@@ -64,3 +64,21 @@ export function changeDishStatus(dishId, status) {
     data: data
   })
 }
+
+// 修改菜品
+export function uploadDish(data) {
+  return request({
+    url: '/dish/dish/upload',
+    method: 'put',
+    data: data
+  })
+}
+
+// 修改菜品
+export function uploadDishes(data) {
+  return request({
+    url: '/dish/dish/uploads',
+    method: 'put',
+    data: data
+  })
+}

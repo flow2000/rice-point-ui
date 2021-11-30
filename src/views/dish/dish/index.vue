@@ -19,7 +19,7 @@
           />
         </div>
       </el-col>
-      <!--用户数据-->
+      <!--菜品数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
           <el-form-item label="菜品名称" prop="dishesName">
@@ -31,12 +31,12 @@
               @keyup.enter.native="handleQuery"
             />
           </el-form-item>
-          <el-form-item label="菜品类型" prop="dishesType">
-            <el-select v-model="queryParams.dishesType" placeholder="请选择菜品类型" clearable size="small">
+          <el-form-item label="菜品类型" prop="typeId">
+            <el-select v-model="queryParams.typeId" placeholder="请选择菜品类型" clearable size="small">
               <el-option
                 v-for="type in dishesType"
-                :key="parseInt(type.typeId)"
-                :value="type.typeName"
+                :value="type.typeId"
+                :label="type.typeName"
                 :disabled="type.status === '1'">
               </el-option>
             </el-select>
@@ -76,7 +76,7 @@
               :disabled="single"
               @click="handleUpdate"
               v-hasPermi="['dish:dish:edit']"
-            >修改</el-button>
+            >编辑</el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -88,6 +88,16 @@
               @click="handleDelete"
               v-hasPermi="['dish:dish:remove']"
             >删除</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button
+              icon="el-icon-upload"
+              size="mini"
+              :disabled="multiple"
+              :loading="exportLoading"
+              @click="handleBatchUpload"
+              v-hasPermi="['dish:dish:upload']"
+            >批量上架</el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -118,15 +128,13 @@
             </template>
           </el-table-column>
           <el-table-column label="月售量" align="center" prop="onsale" />
-          <el-table-column label="菜品状态" align="center" prop="status">
+          <el-table-column label="上架日期" align="center" prop="shelfDate" >
             <template slot-scope="scope">
-              <el-switch
-                v-if="scope.row.status"
-                v-model="scope.row.status"
-                active-value="0"
-                inactive-value="1"
-                @change="handleStatusChange(scope.row)"
-              ></el-switch>
+              <el-tag size="small" v-for="(item,index) in dateOptions"
+                      v-if="scope.row.shelfDate.includes(index+1+'')"
+                      >
+                {{item}}
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -134,10 +142,18 @@
               <el-button
                 size="mini"
                 type="text"
+                icon="el-icon-upload"
+                @click="handleUpload(scope.row)"
+                v-hasPermi="['canteen:info:upload']"
+              >上架
+              </el-button>
+              <el-button
+                size="mini"
+                type="text"
                 icon="el-icon-edit"
                 @click="handleUpdate(scope.row)"
                 v-hasPermi="['dish:dish:edit']"
-              >修改</el-button>
+              >编辑</el-button>
               <el-button
                 size="mini"
                 type="text"
@@ -208,13 +224,31 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 上架菜品对话框 -->
+    <el-dialog :title="title" :visible.sync="shelfOpen" width="500px" append-to-body>
+      <el-form ref="shelfFrom" :model="shelfFrom" label-width="80px">
+        <el-form-item label="上架日期" prop="shelfDate">
+          <el-checkbox-group v-model="shelfFrom.shelfDate">
+            <el-checkbox v-for="(item,index) in dateOptions"
+                         :label="index+1+''"
+                         :checked="index+1+''.includes(shelfFrom.shelfDate)===true"
+                         @change="$forceUpdate()"
+            >{{item}}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitShelfForm">上 架</el-button>
+        <el-button @click="cancelShelf">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { listDish, getDish, delDish, addDish, updateDish, exportDish, changeDishStatus } from "@/api/dish/dish";
+import { listDish, getDish, delDish, addDish, updateDish, exportDish, uploadDish, uploadDishes } from "@/api/dish/dish";
 import { listType } from "@/api/dish/type";
-import { listInfo } from '@/api/canteen/info'
 import { treeselect } from  "@/api/canteen/info"
 import Treeselect from '@riophae/vue-treeselect'
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
@@ -257,17 +291,23 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 是否显示上架菜品弹出层
+      shelfOpen: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         canteenId: null,
         dishesName: null,
-        dishesType: null,
+        typeId: null,
         price: null,
       },
       // 表单参数
       form: {},
+      // 上架表单参数
+      shelfFrom: {},
+      // 上架日期说明数组
+      dateOptions: ["周一","周二","周三","周四","周五","周六","周日"],
       defaultProps: {
         children: "children",
         label: "label",
@@ -339,6 +379,11 @@ export default {
       this.open = false;
       this.reset();
     },
+    // 取消上架按钮
+    cancelShelf() {
+      this.shelfOpen = false;
+      this.resetShelf();
+    },
     // 表单重置
     reset() {
       this.form = {
@@ -355,9 +400,17 @@ export default {
         createBy: null,
         createTime: null,
         updateBy: null,
-        updateTime: null
+        updateTime: null,
       };
       this.resetForm("form");
+    },
+    // 上架表单重置
+    resetShelf() {
+      this.shelfFrom = {
+        dishIds: null,
+        shelfDate: null,
+      };
+      this.resetForm("shelfFrom");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -381,7 +434,7 @@ export default {
       this.open = true;
       this.title = "添加菜品";
     },
-    /** 修改按钮操作 */
+    /** 编辑按钮操作 */
     handleUpdate(row) {
       this.reset();
       const dishId = row.dishId || this.ids
@@ -432,20 +485,41 @@ export default {
         this.exportLoading = false;
       }).catch(() => {});
     },
-    /** 状态修改按钮操作 */
-    handleStatusChange(row) {
-      let text = row.status === '0' ? '启用' : '停用'
-      this.$modal.confirm('确认要' + text + '吗?', '警告', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(function() {
-        return changeDishStatus(row.dishId, row.status)
-      }).then(() => {
-        this.$modal.msgSuccess(text + '成功')
-      }).catch(function() {
-        row.status = row.status === '0' ? '1' : '0'
-      })
+    /** 上架按钮操作 */
+    handleUpload(row) {
+      this.shelfFrom.shelfDate = row.shelfDate.split(",");
+      console.log(this.shelfFrom.shelfDate)
+      this.shelfOpen = true;
+      this.title = "上架菜品";
+      this.ids = row.dishId
+    },
+    /** 批量上架按钮操作 */
+    handleBatchUpload() {
+      // 默认全选
+      this.shelfFrom.shelfDate = ['1', '2', '3', '4', '5', '6', '7']
+      this.shelfOpen = true;
+      this.title = "批量上架菜品";
+    },
+    /** 确认上架操作 */
+    submitShelfForm() {
+      this.shelfFrom.shelfDate = this.shelfFrom.shelfDate.toString()
+      // 单个菜品上架
+      if (typeof this.ids === 'number'){
+        this.shelfFrom.dishId = this.ids;
+        uploadDish(this.shelfFrom).then(response => {
+          this.$modal.msgSuccess("上架成功");
+          this.shelfOpen = false;
+          this.getList();
+        });
+      }else {
+        this.shelfFrom.dishIds = this.ids;
+        uploadDishes(this.shelfFrom).then(response => {
+          this.$modal.msgSuccess("上架成功");
+          this.shelfOpen = false;
+          this.getList();
+        });
+      }
+
     },
     // 节点单击事件
     handleNodeClick(data) {
