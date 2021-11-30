@@ -182,14 +182,9 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button v-if="form.status === '0'" type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">
-          <span v-if="form.status === '0'">
-            取 消
-          </span>
-          <span v-if="form.status !== '0'">
-            了 解
-          </span>
+          取 消
         </el-button>
       </div>
     </el-dialog>
@@ -261,7 +256,6 @@
       })
       this.getDicts('order_status').then(response => {
         this.statusOptions = response.data
-        console.log(this.statusOptions)
       })
     },
     methods: {
