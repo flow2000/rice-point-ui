@@ -532,7 +532,7 @@
       /** 删除按钮操作 */
       handleDelete(row) {
         const canteenIds = row.canteenId || this.ids
-        const canteenName = row.canteenName || '该食堂'
+        const canteenName = row.canteenName || '所选食堂'
         this.$modal.confirm('是否确认删除' + canteenName + '？').then(function() {
           return delInfo(canteenIds)
         }).then(() => {

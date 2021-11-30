@@ -493,7 +493,8 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const dishIds = row.dishId || this.ids;
-      this.$modal.confirm('是否确认删除菜品名称为"' + row.dishesName + '"的数据项？').then(function() {
+      const dishesName = row.dishesName || '所选菜品'
+      this.$modal.confirm('确认删除' + dishesName + '？').then(function() {
         return delDish(dishIds);
       }).then(() => {
         this.getList();
@@ -514,7 +515,6 @@ export default {
     /** 上架按钮操作 */
     handleUpload(row) {
       this.shelfFrom.shelfDate = row.shelfDate.split(",");
-      console.log(this.shelfFrom.shelfDate)
       this.shelfOpen = true;
       this.title = "上架菜品";
       this.ids = row.dishId
