@@ -26,6 +26,8 @@
             <el-input
               v-model="queryParams.orderCode"
               placeholder="请输入订单号"
+              @keyup.native="listenInput"
+              @keydown.native="listenInput"
               clearable
               size="small"
               prefix-icon="el-icon-search"
@@ -37,6 +39,8 @@
             <el-input
               v-model="queryParams.mealNumber"
               placeholder="请输入取餐号"
+              @keyup.native="listenInput"
+              @keydown.native="listenInput"
               clearable
               size="small"
               prefix-icon="el-icon-search"
@@ -392,7 +396,10 @@
         sums[3] = sum + '元'
         return sums
       },
-
+      // 监听取餐号
+      listenInput(e){
+        e.target.value = e.target.value.replace(/[^\d]/g,"");
+      },
     }
   }
 </script>

@@ -68,6 +68,8 @@
             <el-input
               v-model="queryParams.price"
               placeholder="请输入菜品价格"
+              @keyup.native="listenInput"
+              @keydown.native="listenInput"
               clearable
               size="small"
               @keyup.enter.native="handleQuery"
@@ -563,6 +565,10 @@ export default {
     selectCanteen(){
       this.queryParams.canteenId = null;
       this.getList();
+    },
+    // 监听价格
+    listenInput(e){
+      e.target.value = e.target.value.replace(/[^0-9.]/g,"");
     },
   }
 };
