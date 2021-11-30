@@ -3,6 +3,29 @@
     <el-row :gutter="20">
       <!--食堂数据-->
       <el-col :span="4" :xs="24">
+        <div class="head-container">
+          <el-form>
+            <el-form-item  prop="role">
+              <el-select
+                v-model="queryParams.role"
+                placeholder="菜品上架时段"
+                clearable
+                prefix-icon="el-icon-search"
+                size="small"
+                style="width: 100%"
+                @clear="handClearShelfClick"
+              >
+                <el-option
+                  v-for="(item,index) in dateOptions"
+                  :key="index+1"
+                  :label="item"
+                  :value="index+1"
+                  @click.native="handleShelfClick(index+1)"
+                />
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </div>
         <div class="head-container" style="position: center">
           <div class="btn">
             <el-button style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
@@ -301,6 +324,7 @@ export default {
         dishesName: null,
         typeId: null,
         price: null,
+        oneShelfDate: null,
       },
       // 表单参数
       form: {},
@@ -519,9 +543,18 @@ export default {
           this.getList();
         });
       }
-
     },
-    // 节点单击事件
+    // 上架日期单击事件
+    handleShelfClick(data) {
+      this.queryParams.oneShelfDate = data
+      this.getList()
+    },
+    // 清空上架日期事件
+    handClearShelfClick(){
+      this.queryParams.oneShelfDate = null;
+      this.getList()
+    },
+    // 食堂单击事件
     handleNodeClick(data) {
       this.queryParams.canteenId = data.id;
       this.getList();
