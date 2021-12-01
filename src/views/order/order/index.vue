@@ -124,13 +124,13 @@
               <el-table :data="scope.row.dishOrders" show-summary :summary-method="getSummaries">
                 <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
                 <el-table-column align="center" label="价格">
-                  <template slot-scope="scope"><span>{{scope.row.price}}元/份</span></template>
+                  <template slot-scope="scope"><span>{{parseFloat(scope.row.price).toFixed(1)}}元/份</span></template>
                 </el-table-column>
                 <el-table-column align="center" label="数量">
                   <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
                 </el-table-column>
                 <el-table-column align="center" label="小计">
-                  <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
+                  <template slot-scope="scope"><span>{{parseFloat(scope.row.number*scope.row.price).toFixed(1)}}元</span></template>
                 </el-table-column>
               </el-table>
             </template>
@@ -155,13 +155,13 @@
         <el-table :data="form.dishOrders" show-summary :summary-method="getSummaries">
           <el-table-column align="center" label="菜品名称" prop="dishesName"></el-table-column>
           <el-table-column align="center" label="价格">
-            <template slot-scope="scope"><span>{{scope.row.price}}元/份</span></template>
+            <template slot-scope="scope"><span>{{parseFloat(scope.row.price).toFixed(1)}}元/份</span></template>
           </el-table-column>
           <el-table-column align="center" label="数量">
             <template slot-scope="scope"><span>{{scope.row.number}}份</span></template>
           </el-table-column>
           <el-table-column align="center" label="小计">
-            <template slot-scope="scope"><span>{{scope.row.number*scope.row.price}}元</span></template>
+            <template slot-scope="scope"><span>{{parseFloat(scope.row.number*scope.row.price).toFixed(1)}}元</span></template>
           </el-table-column>
         </el-table>
         <el-form-item/>
