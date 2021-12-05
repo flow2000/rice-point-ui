@@ -17,10 +17,10 @@
               >
                 <el-option
                   v-for="(item,index) in dateOptions"
-                  :key="index+1"
+                  :key="index"
                   :label="item"
-                  :value="index+1"
-                  @click.native="handleShelfClick(index+1)"
+                  :value="index"
+                  @click.native="handleShelfClick(index)"
                 />
               </el-select>
             </el-form-item>
@@ -156,7 +156,7 @@
           <el-table-column label="上架日期" align="center" prop="shelfDate" >
             <template slot-scope="scope">
               <el-tag size="small" v-for="(item,index) in dateOptions"
-                      v-if="scope.row.shelfDate.includes(index+1+'')"
+                      v-if="scope.row.shelfDate.includes(index===6?'0':index+1+'')"
                       >
                 {{item}}
               </el-tag>
@@ -256,8 +256,8 @@
         <el-form-item label="上架日期" prop="shelfDate">
           <el-checkbox-group v-model="shelfFrom.shelfDate">
             <el-checkbox v-for="(item,index) in dateOptions"
-                         :label="index+1+''"
-                         :checked="index+1+''.includes(shelfFrom.shelfDate)===true"
+                         :label="index===6?'0':index+1+''"
+                         :checked="(index===6?'0':index+1+''.includes(shelfFrom.shelfDate))===true"
                          @change="$forceUpdate()"
             >{{item}}</el-checkbox>
           </el-checkbox-group>
@@ -522,7 +522,7 @@ export default {
     /** 批量上架按钮操作 */
     handleBatchUpload() {
       // 默认全选
-      this.shelfFrom.shelfDate = ['1', '2', '3', '4', '5', '6', '7']
+      this.shelfFrom.shelfDate = ['0', '1', '2', '3', '4', '5', '6']
       this.shelfOpen = true;
       this.title = "批量上架菜品";
     },
