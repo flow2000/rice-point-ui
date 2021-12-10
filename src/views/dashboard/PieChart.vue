@@ -65,7 +65,7 @@ export default {
               type: 'pie',
               roseType: 'radius',
               radius: [15, 95],
-              center: ['50%', '38%'],
+              center: ['50%', '50%'],
               data: response.data.canteenTurnover,
               animationEasing: 'cubicInOut',
               animationDuration: 2600
