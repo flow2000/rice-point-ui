@@ -21,7 +21,8 @@ stages:
             path:
               - ./dist
         commands:
-          - npm install && rm -rf ./dist && npm run build
+          - npm install && npm install highlight.js --save-dev
+          - ' && rm -rf ./dist && npm run build'
   - name: compile
     displayName: 编译
     strategy: naturally
@@ -66,3 +67,6 @@ stages:
           tar -zxvf output.tar.gz
           ls
           echo 'Hello Gitee!
+permissions:
+  - role: admin
+    members: []
