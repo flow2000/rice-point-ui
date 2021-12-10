@@ -15,3 +15,12 @@ export function initLine() {
     method: 'get',
   })
 }
+
+//查询饼状图信息
+export function initBar() {
+  return request({
+    url: '/board/info/initBar',
+    method: 'get',
+  })
+}
+
