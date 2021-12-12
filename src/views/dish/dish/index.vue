@@ -548,6 +548,7 @@ export default {
     },
     // 上架日期单击事件
     handleShelfClick(data) {
+      data = data===6?7:data+1
       this.queryParams.oneShelfDate = data
       this.getList()
     },
