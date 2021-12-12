@@ -169,7 +169,7 @@
                 type="text"
                 icon="el-icon-upload"
                 @click="handleUpload(scope.row)"
-                v-hasPermi="['canteen:info:upload']"
+                v-hasPermi="['dish:dish:upload']"
               >上架
               </el-button>
               <el-button
