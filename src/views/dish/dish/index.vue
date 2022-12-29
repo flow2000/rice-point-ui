@@ -398,7 +398,7 @@ export default {
     },
     /** 返回图片地址 */
     getImage(url) {
-      return "https://ricepoint-1305004688.cos.ap-nanjing.myqcloud.com"+url;
+      return process.env.VUE_APP_FILE_API +url;
     },
     // 取消按钮
     cancel() {

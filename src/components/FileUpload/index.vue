@@ -69,7 +69,7 @@ export default {
   },
   data() {
     return {
-      baseUrl: "https://ricepoint-1305004688.cos.ap-nanjing.myqcloud.com",
+      baseUrl: process.env.VUE_APP_FILE_API ,
       uploadFileUrl: process.env.VUE_APP_BASE_API + "/common/upload", // 上传的图片服务器地址
       headers: {
         Authorization: "Bearer " + getToken(),
