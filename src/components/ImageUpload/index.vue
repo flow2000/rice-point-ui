@@ -91,7 +91,7 @@ export default {
           this.fileList = list.map(item => {
             if (typeof item === "string") {
               if (item.indexOf(this.baseUrl) === -1) {
-                  item = { name: this.baseUrl + item, url: this.baseUrl + item };
+                  item = { name: this.baseUrl + item.replace("/profile",""), url: this.baseUrl + item.replace("/profile","") };
               } else {
                   item = { name: item, url: item };
               }

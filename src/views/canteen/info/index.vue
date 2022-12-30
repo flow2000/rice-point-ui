@@ -450,7 +450,7 @@
       },
       /** 返回图片地址 */
       getImage(url) {
-        return process.env.VUE_APP_FILE_API +url;
+        return process.env.VUE_APP_FILE_API + url.replace("/profile","");
       },
       // 取消按钮
       cancel() {
