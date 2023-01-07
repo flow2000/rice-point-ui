@@ -1,0 +1,45 @@
+name: 自动部署
+
+on:
+  push:
+    branches: [master,dev]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. 检出分支
+        uses: actions/checkout@v3
+
+      - name: 2. 安装 Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: 3. 缓存 node
+        uses: actions/cache@v1
+        id: cache
+        with:
+          path: node_modules
+          key: ${{runner.OS}}-${{hashFiles('**/package-lock.json')}}
+
+      - name: 4. 安装依赖
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          npm install --save
+
+      - name: 5. 构建
+        run: |
+          npm run build:prod
+
+      - name: 4. 推送到服务器
+        uses: ilCollez/ssh-scp-deploy@v1.1.0
+        with:
+          host: ${{ secrets.SERVER_HOST }} #ip
+          port: ${{ secrets.SERVER_PORT }} #端口
+          username: ${{ secrets.SERVER_USER }} #用户名
+          key: ${{ secrets.SERVER_ACCESS_TOKEN }} #服务器密钥
+          files: | #上传文件
+              dist/*
+          remote-path: ${{ secrets.SERVER_TARGET }} #远程路径
+          clean: true #是否清理远程路径
