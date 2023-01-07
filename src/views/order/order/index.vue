@@ -5,7 +5,7 @@
       <el-col :span="4" :xs="24">
         <div class="head-container" style="position: center">
           <div class="btn">
-            <el-button style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
+            <el-button v-if="isShow" style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
               全部食堂
             </el-button>
           </div>
@@ -230,11 +230,14 @@
         title: '',
         // 是否显示弹出层
         open: false,
+        // 是否显示全部食堂
+        isShow: false,
         // 订单状态数组
         statusOptions: null,
         // 查询参数
         queryParams: {
           pageNum: 1,
+          canteenId: 0,
           pageSize: 10,
           orderCode: null,
           createTime: null,
@@ -253,7 +256,6 @@
       }
     },
     created() {
-      this.getList()
       this.getCanteen();
       this.getDicts('order_error').then(response => {
         this.orderError = response.data
@@ -281,7 +283,13 @@
       getCanteen(){
         treeselect().then(response => {
           this.canteenOptions = response.data;
+          if(this.canteenOptions!==null && this.canteenOptions.length>1){
+            this.isShow=true
+          }else if(this.canteenOptions!==null && this.canteenOptions.length===1){
+            this.queryParams.canteenId = this.canteenOptions[0].id;
+          }
           this.canteenTotal = response.total;
+          this.getList()
         });
       },
       // 节点单击事件
@@ -291,7 +299,7 @@
       },
       // 单击全部食堂事件
       selectCanteen(){
-        this.queryParams.canteenId = null;
+        this.queryParams.canteenId = 0;
         this.getList();
       },
       // 取消按钮

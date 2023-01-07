@@ -28,7 +28,7 @@
         </div>
         <div class="head-container" style="position: center">
           <div class="btn">
-            <el-button style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
+            <el-button v-if="isShow" style="color: #607188; font-size: 14px" size="mini" type="text" @click="selectCanteen" >
               全部食堂
             </el-button>
           </div>
@@ -217,17 +217,6 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="归属食堂" prop="canteenIds">
-          <el-select v-model="form.canteenIds" multiple placeholder="请选择">
-            <el-option
-              v-for="item in canteenOptions"
-              :key="item.id"
-              :label="item.label"
-              :value="item.id"
-              :disabled="item.disabled"
-            ></el-option>
-          </el-select>
-        </el-form-item>
         <el-form-item label="菜品图片" prop="url">
           <imageUpload v-model="form.url" :limit="1"/>
         </el-form-item>
@@ -316,13 +305,15 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 是否显示全部食堂
+      isShow: false,
       // 是否显示上架菜品弹出层
       shelfOpen: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        canteenId: null,
+        canteenId: 0,
         dishesName: null,
         typeId: null,
         price: null,
@@ -356,7 +347,6 @@ export default {
     };
   },
   created() {
-    this.getList();
     this.getDicts('sys_status').then(response => {
       this.statusOptions = response.data
     })
@@ -386,7 +376,14 @@ export default {
     getCanteen(){
       treeselect().then(response => {
         this.canteenOptions = response.data;
+        if(this.canteenOptions!==null && this.canteenOptions.length>1){
+          this.isShow=true
+          this.queryParams.canteenId=0
+        }else if(this.canteenOptions!==null && this.canteenOptions.length===1){
+          this.queryParams.canteenId = this.canteenOptions[0].id;
+        }
         this.canteenTotal = response.total;
+        this.getList();
       });
     },
     /** 查询食堂id组 */
@@ -564,7 +561,7 @@ export default {
     },
     // 单击全部食堂事件
     selectCanteen(){
-      this.queryParams.canteenId = null;
+      this.queryParams.canteenId = 0;
       this.getList();
     },
     // 监听价格

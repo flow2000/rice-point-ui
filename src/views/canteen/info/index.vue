@@ -92,7 +92,6 @@
       </el-table-column>
       <el-table-column label="负责人" align="center" prop="leader"/>
       <el-table-column label="联系电话" align="center" prop="phone"/>
-      <el-table-column label="邮箱" align="center" prop="email" :show-overflow-tooltip="true"/>
       <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
           <el-switch
