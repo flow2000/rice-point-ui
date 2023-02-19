@@ -87,7 +87,11 @@
       <el-table-column label="appid" width="170" align="center" prop="appId" />
       <el-table-column label="访问token" align="center" prop="token" :show-overflow-tooltip="true"/>
       <el-table-column label="名称" align="center" prop="appName" :show-overflow-tooltip="true"/>
-      <el-table-column label="头像" align="center" prop="headImg" />
+      <el-table-column label="头像" align="center" prop="headImg" >
+        <template slot-scope="scope">
+          <el-image :src="getImage(scope.row.headImg)" style="width:50px"></el-image>
+        </template>
+      </el-table-column>
       <el-table-column label="主体名称" align="center" prop="principalName" :show-overflow-tooltip="true"/>
       <el-table-column label="功能介绍" align="center" prop="signature" :show-overflow-tooltip="true"/>
       <el-table-column label="状态" align="center" prop="status">
@@ -252,6 +256,10 @@ export default {
         remark: null
       };
       this.resetForm("form");
+    },
+    /** 返回图片地址 */
+    getImage(url) {
+      return process.env.VUE_APP_FILE_API + url.replace("/profile","");
     },
     /** 搜索按钮操作 */
     handleQuery() {

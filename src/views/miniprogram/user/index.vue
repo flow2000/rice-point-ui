@@ -102,7 +102,11 @@
           <dict-tag :options="dict.type.user_type" :value="scope.row.userType"/>
         </template>
       </el-table-column>
-      <el-table-column label="头像地址" align="center" prop="avatar" v-if="columns[5].visible"/>
+      <el-table-column label="头像地址" align="center" prop="avatar" v-if="columns[5].visible">
+        <template slot-scope="scope">
+          <el-image :src="getImage(scope.row.avatar)" style="width:50px"></el-image>
+        </template>
+      </el-table-column>
       <el-table-column label="用户性别" align="center" prop="sex" v-if="columns[6].visible">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.sys_user_sex" :value="scope.row.sex"/>
@@ -310,6 +314,10 @@ export default {
         loginDate: null
       };
       this.resetForm("form");
+    },
+    /** 返回图片地址 */
+    getImage(url) {
+      return process.env.VUE_APP_FILE_API + url.replace("/profile","");
     },
     /** 搜索按钮操作 */
     handleQuery() {
