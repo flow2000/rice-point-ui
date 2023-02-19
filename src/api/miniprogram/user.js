@@ -5,6 +5,9 @@ export function listUser(query) {
   return request({
     url: '/miniprogram/user/list',
     method: 'get',
+    headers:{
+      isToken: false
+    },
     params: query
   })
 }
@@ -13,6 +16,9 @@ export function listUser(query) {
 export function getUser(id) {
   return request({
     url: '/miniprogram/user/' + id,
+    headers:{
+      isToken: false
+    },
     method: 'get'
   })
 }
@@ -21,6 +27,9 @@ export function getUser(id) {
 export function addUser(data) {
   return request({
     url: '/miniprogram/user',
+    headers:{
+      isToken: false
+    },
     method: 'post',
     data: data
   })
@@ -30,6 +39,9 @@ export function addUser(data) {
 export function updateUser(data) {
   return request({
     url: '/miniprogram/user',
+    headers:{
+      isToken: false
+    },
     method: 'put',
     data: data
   })
@@ -39,6 +51,9 @@ export function updateUser(data) {
 export function delUser(id) {
   return request({
     url: '/miniprogram/user/' + id,
+    headers:{
+      isToken: false
+    },
     method: 'delete'
   })
 }
@@ -47,6 +62,9 @@ export function delUser(id) {
 export function exportUser(query) {
   return request({
     url: '/miniprogram/user/export',
+    headers:{
+      isToken: false
+    },
     method: 'get',
     params: query
   })

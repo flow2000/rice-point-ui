@@ -5,6 +5,9 @@ export function listConfig(query) {
   return request({
     url: '/miniprogram/config/list',
     method: 'get',
+    headers:{
+      isToken: false
+    },
     params: query
   })
 }
@@ -13,6 +16,9 @@ export function listConfig(query) {
 export function getConfig(id) {
   return request({
     url: '/miniprogram/config/' + id,
+    headers:{
+      isToken: false
+    },
     method: 'get'
   })
 }
@@ -21,6 +27,9 @@ export function getConfig(id) {
 export function addConfig(data) {
   return request({
     url: '/miniprogram/config',
+    headers:{
+      isToken: false
+    },
     method: 'post',
     data: data
   })
@@ -30,6 +39,9 @@ export function addConfig(data) {
 export function updateConfig(data) {
   return request({
     url: '/miniprogram/config',
+    headers:{
+      isToken: false
+    },
     method: 'put',
     data: data
   })
@@ -39,6 +51,9 @@ export function updateConfig(data) {
 export function delConfig(id) {
   return request({
     url: '/miniprogram/config/' + id,
+    headers:{
+      isToken: false
+    },
     method: 'delete'
   })
 }
@@ -47,6 +62,9 @@ export function delConfig(id) {
 export function exportConfig(query) {
   return request({
     url: '/miniprogram/config/export',
+    headers:{
+      isToken: false
+    },
     method: 'get',
     params: query
   })
