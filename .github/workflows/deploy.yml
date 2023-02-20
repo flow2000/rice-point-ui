@@ -32,7 +32,7 @@ jobs:
         run: |
           npm run build:prod
 
-      - name: 4. 推送到服务器
+      - name: 6. 推送到服务器
         uses: ilCollez/ssh-scp-deploy@v1.1.0
         with:
           host: ${{ secrets.SERVER_HOST }} #ip
@@ -43,3 +43,18 @@ jobs:
               dist/*
           remote-path: ${{ secrets.SERVER_TARGET }} #远程路径
           clean: true #是否清理远程路径
+
+      - name: 7. 安装 Python #没有使用腾讯云cdn可删除该步骤
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: 8. 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install tencentcloud-sdk-python
+          pip install tencentcloud-sdk-python-cdn
+
+      - name: 9. 刷新腾讯云cdn #没有使用腾讯云cdn可删除该步骤
+        run: |
+          python cdn.py ${{ secrets.TENCENT_SECRETID }} ${{ secrets.TENCENT_SECRETKEY }} ${{ secrets.CDN_URL }}
