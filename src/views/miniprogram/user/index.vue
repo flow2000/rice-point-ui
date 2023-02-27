@@ -102,7 +102,7 @@
           <dict-tag :options="dict.type.user_type" :value="scope.row.userType"/>
         </template>
       </el-table-column>
-      <el-table-column label="头像地址" align="center" prop="avatar" v-if="columns[5].visible">
+      <el-table-column label="头像" align="center" prop="avatar" v-if="columns[5].visible">
         <template slot-scope="scope">
           <el-image :src="getImage(scope.row.avatar)" style="width:50px"></el-image>
         </template>
@@ -174,8 +174,8 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="头像地址">
-          <imageUpload v-model="form.avatar"/>
+        <el-form-item label="头像">
+          <imageUpload v-model="form.avatar" :limit="1"/>
         </el-form-item>
         <el-form-item label="用户性别" prop="sex">
           <el-select v-model="form.sex" placeholder="请选择用户性别">
@@ -254,7 +254,7 @@ export default {
         { key: 2, label: `openid`, visible: true },
         { key: 3, label: `用户昵称`, visible: true },
         { key: 4, label: `用户类型`, visible: true },
-        { key: 5, label: `头像地址`, visible: true },
+        { key: 5, label: `头像`, visible: true },
         { key: 6, label: `用户性别`, visible: false },
         { key: 7, label: `国家`, visible: false },
         { key: 8, label: `省份`, visible: false },

@@ -1,33 +1,14 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="appid" prop="appId">
+      <el-form-item label="appid" prop="appid">
         <el-input
-          v-model="queryParams.appId"
+          v-model="queryParams.appid"
           placeholder="请输入appid"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
-      <el-form-item label="名称" prop="appName">
-        <el-input
-          v-model="queryParams.appName"
-          placeholder="请输入名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
-          <el-option
-            v-for="dict in dict.type.sys_status"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
-        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -43,7 +24,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['miniprogram:config:add']"
+          v-hasPermi="['miniprogram:home:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -54,7 +35,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['miniprogram:config:edit']"
+          v-hasPermi="['miniprogram:home:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -65,7 +46,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['miniprogram:config:remove']"
+          v-hasPermi="['miniprogram:home:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -76,36 +57,17 @@
           size="mini"
           :loading="exportLoading"
           @click="handleExport"
-          v-hasPermi="['miniprogram:config:export']"
+          v-hasPermi="['miniprogram:home:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="configList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="homeList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="appid" width="170" align="center" prop="appId">
-        <template slot-scope="scope">
-          <router-link :to="'/miniprogram/config-data/index/' + scope.row.appId" class="link-type">
-            <span>{{ scope.row.appId }}</span>
-          </router-link>
-        </template>
-      </el-table-column>
-      <el-table-column label="访问token" align="center" prop="token" :show-overflow-tooltip="true"/>
-      <el-table-column label="名称" align="center" prop="appName" :show-overflow-tooltip="true"/>
-      <el-table-column label="头像" align="center" prop="headImg" >
-        <template slot-scope="scope">
-          <el-image :src="getImage(scope.row.headImg)" style="width:50px"></el-image>
-        </template>
-      </el-table-column>
-      <el-table-column label="主体名称" align="center" prop="principalName" :show-overflow-tooltip="true"/>
-      <el-table-column label="功能介绍" align="center" prop="signature" :show-overflow-tooltip="true"/>
-      <el-table-column label="状态" align="center" prop="status">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.sys_status" :value="scope.row.status"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="备注" align="center" prop="remark" />
+      <el-table-column label="id" align="center" prop="id" />
+      <el-table-column label="appid" align="center" prop="appid" />
+      <el-table-column label="图片地址" align="center" prop="img" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -113,14 +75,14 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['miniprogram:config:edit']"
+            v-hasPermi="['miniprogram:home:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['miniprogram:config:remove']"
+            v-hasPermi="['miniprogram:home:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -134,39 +96,22 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改微信小程序配置对话框 -->
+    <!-- 添加或修改轮播图对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="appid" prop="appId">
-          <el-input v-model="form.appId" placeholder="请输入appid" />
-        </el-form-item>
-        <el-form-item label="访问token" prop="token">
-          <el-input v-model="form.token" placeholder="请输入访问token" />
-        </el-form-item>
-        <el-form-item label="名称" prop="appName">
-          <el-input v-model="form.appName" placeholder="请输入名称" />
-        </el-form-item>
-        <el-form-item label="头像">
-          <imageUpload v-model="form.headImg" :limit="1"/>
-        </el-form-item>
-        <el-form-item label="主体名称" prop="principalName">
-          <el-input v-model="form.principalName" placeholder="请输入主体名称" />
-        </el-form-item>
-        <el-form-item label="功能介绍" prop="signature">
-          <el-input v-model="form.signature" placeholder="请输入功能介绍" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="form.status" placeholder="请选择状态">
+        <el-form-item label="appid" prop="appid" >
+          <el-select v-model="form.appid" placeholder="请选择">
             <el-option
-              v-for="dict in dict.type.sys_status"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.value"
+              v-for="item in wxAppOptions"
+              :key="item.appId"
+              :label="item.appId"
+              :value="item.appId"
+              :disabled="item.status == '1'"
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
+        <el-form-item label="图片地址">
+          <imageUpload v-model="form.img"/>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -178,11 +123,11 @@
 </template>
 
 <script>
-import { listConfig, getConfig, delConfig, addConfig, updateConfig, exportConfig } from "@/api/miniprogram/config";
+import { listHome, getHome, delHome, addHome, updateHome, exportHome } from "@/api/miniprogram/home";
+import {listConfig} from "@/api/miniprogram/config";
 
 export default {
-  name: "Config",
-  dicts: ['sys_status'],
+  name: "Home",
   data() {
     return {
       // 遮罩层
@@ -199,30 +144,30 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 微信小程序配置表格数据
-      configList: [],
+      // 轮播图表格数据
+      homeList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
       open: false,
+      // 小程序选项
+      wxAppOptions: {},
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        appId: null,
-        appName: null,
-        status: null,
+        appid: null,
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
-        id: [
-          { required: true, message: "唯一标识不能为空", trigger: "blur" }
-        ],
-        appId: [
+        appid: [
           { required: true, message: "appid不能为空", trigger: "blur" }
         ],
+        img: [
+          { required: true, message: "图片地址不能为空", trigger: "blur" }
+        ]
       }
     };
   },
@@ -230,11 +175,14 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询微信小程序配置列表 */
+    /** 查询轮播图列表 */
     getList() {
       this.loading = true;
-      listConfig(this.queryParams).then(response => {
-        this.configList = response.rows;
+      listConfig().then(response => {
+        this.wxAppOptions = response.rows;
+      });
+      listHome(this.queryParams).then(response => {
+        this.homeList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -248,24 +196,10 @@ export default {
     reset() {
       this.form = {
         id: null,
-        appId: null,
-        token: null,
-        appName: null,
-        headImg: null,
-        principalName: null,
-        signature: null,
-        status: null,
-        createBy: null,
-        createTime: null,
-        updateBy: null,
-        updateTime: null,
-        remark: null
+        appid: null,
+        img: null
       };
       this.resetForm("form");
-    },
-    /** 返回图片地址 */
-    getImage(url) {
-      return process.env.VUE_APP_FILE_API + url.replace("/profile","");
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -287,16 +221,16 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加微信小程序配置";
+      this.title = "添加轮播图";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
       const id = row.id || this.ids
-      getConfig(id).then(response => {
+      getHome(id).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改微信小程序配置";
+        this.title = "修改轮播图";
       });
     },
     /** 提交按钮 */
@@ -304,13 +238,13 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
-            updateConfig(this.form).then(response => {
+            updateHome(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addConfig(this.form).then(response => {
+            addHome(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -322,8 +256,8 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.$modal.confirm('是否确认删除微信小程序配置编号为"' + ids + '"的数据项？').then(function() {
-        return delConfig(ids);
+      this.$modal.confirm('是否确认删除轮播图编号为"' + ids + '"的数据项？').then(function() {
+        return delHome(ids);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
@@ -332,9 +266,9 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       const queryParams = this.queryParams;
-      this.$modal.confirm('是否确认导出所有微信小程序配置数据项？').then(() => {
+      this.$modal.confirm('是否确认导出所有轮播图数据项？').then(() => {
         this.exportLoading = true;
-        return exportConfig(queryParams);
+        return exportHome(queryParams);
       }).then(response => {
         this.$download.name(response.msg);
         this.exportLoading = false;

@@ -126,6 +126,19 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/miniprogram/config-data',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'index/:appid',
+        component: (resolve) => require(['@/views/miniprogram/config/data'], resolve),
+        name: 'Data',
+        meta: { title: '轮播图', activeMenu: '/miniprogram/config'}
+      }
+    ]
+  },
+  {
     path: '/monitor/job-log',
     component: Layout,
     hidden: true,
