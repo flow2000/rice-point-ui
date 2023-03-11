@@ -104,7 +104,11 @@
       </el-table-column>
       <el-table-column label="头像" align="center" prop="avatar" v-if="columns[5].visible">
         <template slot-scope="scope">
-          <el-image :src="getImage(scope.row.avatar)" style="width:50px"></el-image>
+          <el-image :src="scope.row.avatar" style="width:50px;border-radius: 50px;">
+            <div slot="error" class="image-slot">
+              <el-image src="https://cdn.panghai.top/d/rice-point/avatar/default-avatar.png"></el-image>
+            </div>
+          </el-image>
         </template>
       </el-table-column>
       <el-table-column label="用户性别" align="center" prop="sex" v-if="columns[6].visible">
